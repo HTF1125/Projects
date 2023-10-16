@@ -161,3 +161,10 @@ class PxVol1M(PxVol):
 class PxVol3M(PxVol):
     months = 3
 
+
+class PxRSI10(Factor):
+    def fit(self) -> "Factor":
+        prices = self.universe.get_prices()
+        rsi = stats.RSI(prices, 50).clip(lower=0.2, upper=0.8).mul(-1)
+        self.data = rsi
+        return self

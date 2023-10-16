@@ -116,7 +116,7 @@ def cum_return(data: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series, pd.Data
     if isinstance(data, pd.DataFrame):
         # If the input is a DataFrame, apply cum_return to each column
         out = data.aggregate(cum_return)
-        out.name = "Cum.Return"
+        out.name = "CumReturn"
         return out
     # If the input is a Series, calculate cumulative return for the Series
     data = data.dropna()  # Remove NaN values
@@ -159,7 +159,7 @@ def ann_return(
     if isinstance(data, pd.DataFrame):
         # If the input is a DataFrame, calculate the annualized return for each column
         out = data.aggregate(ann_return, axis=0, ann_factor=ann_factor)
-        out.name = "Ann.Return"
+        out.name = "AnnReturn"
         return out
     # If the input is a Series, calculate the annualized return for the Series
     base_return = np.exp(log_return(data).mean()) - 1
@@ -202,7 +202,7 @@ def ann_volatility(
     if isinstance(data, pd.DataFrame):
         # If the input is a DataFrame, calculate the annualized return for each column
         out = data.aggregate(ann_volatility, axis=0, ann_factor=ann_factor)
-        out.name = "Ann.Volatility"
+        out.name = "AnnVolatility"
         return out
     # If the input is a Series, calculate the annualized return for the Series
     base_return = log_return(data).std()
@@ -248,7 +248,7 @@ def ann_sharpe(
     if isinstance(data, pd.DataFrame):
         # If the input is a DataFrame, calculate the annualized return for each column
         out = data.aggregate(ann_sharpe, axis=0, ann_factor=ann_factor)
-        out.name = "Ann.Sharpe"
+        out.name = "AnnSharpe"
         return out
     # If the input is a Series, calculate the annualized return for the Series
     return (ann_return(data) - risk_free) / ann_volatility(data)
@@ -282,7 +282,7 @@ def information_coefficient(
     info_coefficient = combined_data.groupby("Date").apply(
         lambda x: spearmanr(a=x["Factor"], b=x["Return"])[0]
     )
-    info_coefficient.name = "Info.Coefficient"
+    info_coefficient.name = "InformationCoefficient"
 
     return info_coefficient
 
@@ -290,7 +290,7 @@ def information_coefficient(
 ####################################################################################################
 # Uncategorized
 ####################################################################################################
-def MA(
+def SMA(
     data: Union[pd.Series, pd.DataFrame], window: int = 5
 ) -> Union[pd.Series, pd.DataFrame]:
     return data.rolling(window=window).mean()
@@ -313,3 +313,20 @@ def MACD(
     macd = ema1 - ema2
     macd_s = EMA(data=macd, window=window3)
     return macd_s - macd
+
+
+def RMA(close: pd.DataFrame, periods: int = 10) -> pd.DataFrame:
+    return close.ewm(alpha=(1.0 / periods)).mean()
+
+
+def RSI(
+    close: pd.DataFrame,
+    periods: int = 26,
+) -> pd.DataFrame:
+    pos = close.diff()
+    neg = pos.copy()
+    pos[pos < 0] = 0
+    neg[neg > 0] = 0
+    pos_rma = RMA(close=pos, periods=periods)
+    neg_rma = RMA(close=neg, periods=periods)
+    return pos_rma / (pos_rma + neg_rma.abs())

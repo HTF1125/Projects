@@ -20,3 +20,25 @@ class Table(DataTable):
         "backgroundColor": "white",
         "textAlign": "center",
     }
+
+
+import pandas as pd
+import dash_ag_grid as dag
+
+
+class AgTable:
+    @classmethod
+    def layout(cls, id: str, data: pd.DataFrame):
+        return dag.AgGrid(
+            id="cell-double-clicked-grid",
+            rowData=data.to_dict("records"),
+            columnDefs=[{"field": i} for i in data.columns],
+            defaultColDef={
+                "resizable": True,
+                "sortable": True,
+                "filter": True,
+                "minWidth": 125,
+            },
+            columnSize="sizeToFit",
+            getRowId="params.data.State",
+        )

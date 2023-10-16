@@ -35,4 +35,5 @@ __all__ = (
     "UsLei5Y",
     "UsLei10Y",
     "VolState5Y",
+    "PxRSI10",
 )

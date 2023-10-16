@@ -74,13 +74,16 @@ class LightCard(html.Div):
 
 
 class Container(html.Div):
-
     style = {
-        "display" : "block",
-        "margin" : "2px, 0px",
-        "position" : "relative",
-        "width" : "calc(100% - 2px)",
-        "height" : "auto",
-        "border-radius" : "2px",
-        "trasition" : "box-shadow .2s ease"
+        "display": "block",
+        "margin": "2px, 0px",
+        "position": "relative",
+        "width": "calc(100% - 2px)",
+        "height": "auto",
+        "border-radius": "2px",
+        "trasition": "box-shadow .2s ease",
     }
+
+
+class Row(html.Div):
+    style = {"width": "100%"}

@@ -1,8 +1,6 @@
 from dash import Dash, dcc
 from dash import callback, Output, Input
 from app.web import pages, components
-from dash_iconify import DashIconify
-import dash_mantine_components as dmc
 
 
 app = Dash(
@@ -20,29 +18,16 @@ server = app.server
 )
 def display(pathname: str):
     for page in pages.all_pages:
-        if page.href == pathname:
+        if page.href.startswith(pathname):
             return page.layout()
     raise
 
 
-app.layout = dmc.MantineProvider(
-    theme={
-        "fontFamily": "'Inter', sans-serif",
-        "primaryColor": "indigo",
-        "components": {
-            "Button": {"styles": {"root": {"fontWeight": 400}}},
-            "Alert": {"styles": {"title": {"fontWeight": 500}}},
-            "AvatarGroup": {"styles": {"truncated": {"fontWeight": 500}}},
-        },
-    },
-    inherit=True,
-    withGlobalStyles=True,
-    withNormalizeCSS=True,
+app.layout = components.GlobalLayout(
     children=[
         dcc.Store(id="store"),
         dcc.Location(id="url", refresh=False),
         components.Navbar.layout(),
-        DashIconify(icon="ion:logo-github", width=30, rotate=0, flip="horizontal"),
         components.MainLayout(id="page"),
         components.Footer.layout(),
     ],

@@ -18,19 +18,22 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.abspath(__file__), "../.
 import click
 import app
 
+import logging
+logger = logging.getLogger(__name__)
+
 @click.command()
 @click.argument("task", default="db")
 def cli(task: str) -> None:
     if task == "db":
-        # logger.info("Running price update")
+        logger.info("Updating Database...")
         # robo.db.admin.update_px()
         app.database.admin.update_px()
     elif task == "web":
+        logger.info("Launching Web...")
         app.web.main.app.run(debug=True)
 
-        # logger.info("Downloading local replica of the database")
-    # msg = "*" * 20 + "[TASK COMPLETE]" + "*" * 20
-    # logger.info(msg)
+    msg = "*" * 20 + "[TASK COMPLETE]" + "*" * 20
+    logger.info(msg)
 
 
 if __name__ == "__main__":

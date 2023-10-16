@@ -1,17 +1,17 @@
 
-from .dashboard import Dashboard
-from .factor import Factor
-from .glossary import Glossary
+from .dashboard import *
+from .factor import *
+from .glossary import *
 
 
 
 __all__ = [
     "Dashboard",
+    "CapitalMarkets",
     "Factor",
     "Glossary",
 ]
 
-
 all_pages = [
-    Dashboard, Factor, Glossary
+    Dashboard, CapitalMarkets, Factor, Glossary
 ]

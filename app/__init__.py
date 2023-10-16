@@ -1,8 +1,4 @@
 """ROBERT"""
-from . import core
-from . import database
-from . import web
-
 
 
 import logging
@@ -15,4 +11,6 @@ streamhandler.setFormatter(formatter)
 streamhandler.setLevel(logging.DEBUG)
 logger.addHandler(streamhandler)
 logger.setLevel(logging.DEBUG)
-# logger.info("initialize streamlit webpage.")
+from . import core
+from . import database
+from . import web

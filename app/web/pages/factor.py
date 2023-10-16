@@ -9,8 +9,6 @@ from app.web import components
 
 logger = logging.getLogger(__name__)
 
-un1 = universes.UsSectors()
-un2 = universes.GlobalAllo()
 
 
 class Factor:
@@ -41,18 +39,19 @@ class Factor:
                         )
                     ]
                 ),
-                components.Container(
-                    dcc.Loading(
-                        components.Table(
-                            id="factor-table",
-                            page_size=10,
-                            # filter_action="native",
-                            sort_action="native",
-                            sort_mode="multi",
-                            page_action="native",
-                        ),
-                    ),
-                ),
+                # components.Container(
+                #     dcc.Loading(
+                #         # components.Table(
+                #         #     id="factor-table",
+                #         #     page_size=10,
+                #         #     sort_action="native",
+                #         #     sort_mode="multi",
+                #         #     page_action="native",
+                #         # ),
+                #     ),
+                # ),
+                html.Div(id="table-factor-result")
+
             ]
         )
 
@@ -88,25 +87,23 @@ class Factor:
             },
         )
 
+import dash_ag_grid as dag
+
 
 @callback(
-    Output("factor-table", "data"),
-    Output("factor-table", "columns"),
+    # Output("factor-table", "data"),
+    # Output("factor-table", "columns"),
+    Output("table-factor-result", "children"),
     Output("factor-backtest-performance", "figure"),
     Input("universe-dropdown", "value"),
 )
 def get_factor_table(universe: str):
-    global un1, un2
-    if universe == un1.__class__.__name__:
-        uni_instance = un1
-    else:
-        uni_instance = un2
-    print(uni_instance)
-    # uni_instance = getattr(universes, universe)()
+
+    uni_instance = getattr(universes, universe)()
     uni_instance.add_factor(*factors.__all__)
     perfs = [
         factor.to_performance()
-        for name, factor in uni_instance.stores["factors"].items()
+        for name, factor in uni_instance.cache["factors"].items()
     ]
     perfs = pd.concat(perfs, axis=1)
     perf_fig = px.line(perfs)
@@ -119,12 +116,24 @@ def get_factor_table(universe: str):
         ],
         axis=1,
     ).round(3)
-    df = perfs.reset_index()
-    return (
-        df.to_dict("records"),
-        [{"id": str(c), "name": str(c)} for c in df.columns],
-        perf_fig,
-    )
+    data = perfs.reset_index()
+
+    gg = dag.AgGrid(
+            id="cell-double-clicked-grid",
+            rowData=data.to_dict("records"),
+            columnDefs=[{"field": i} for i in data.columns],
+            defaultColDef={
+                "resizable": False,
+                "sortable": True,
+                "filter": True,
+                "minWidth": 125,
+            },
+            columnSize="sizeToFit",
+            getRowId="params.data.State",
+        )
+
+
+    return (gg, perf_fig)
 
 
 def blank_fig():
