@@ -1,0 +1,30 @@
+{
+    // Window Editor
+    "editor.rulers": [
+        100
+    ],
+    "editor.cursorStyle": "line-thin",
+    "editor.fontSize": 12,
+    "editor.fontLigatures": true,
+    "editor.fontFamily": "JetBrains Mono, monospace",
+    "editor.codeLensFontFamily": "JetBrains Mono, monospace",
+    "editor.minimap.enabled": false,
+
+    // Git
+    "git.autofetch": true,
+    "diffEditor.ignoreTrimWhitespace": true,
+    // Python
+    "autoDocstring.docstringFormat": "google",
+    "autoDocstring.guessTypes": true,
+    "autoDocstring.generateDocstringOnEnter": true,
+    "python.analysis.typeCheckingMode": "basic",
+    // Terminal
+    "terminal.integrated.fontSize": 12,
+    "terminal.integrated.fontFamily": "JetBrains Mono, monospace",
+    // Files
+    "files.autoSave": "afterDelay",
+    "files.trimTrailingWhitespace": true,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    }
+}
