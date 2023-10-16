@@ -1,18 +1,8 @@
-from dash import Dash, dcc, html
+from dash import Dash, dcc
 from dash import callback, Output, Input
 from app.web import pages, components
-
-import logging
-
-logger = logging.getLogger("app.web")
-logging.captureWarnings(capture=True)
-formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
-streamhandler = logging.StreamHandler()
-streamhandler.setFormatter(formatter)
-streamhandler.setLevel(logging.DEBUG)
-logger.addHandler(streamhandler)
-logger.setLevel(logging.DEBUG)
-logger.info("initialize streamlit webpage.")
+from dash_iconify import DashIconify
+import dash_mantine_components as dmc
 
 
 app = Dash(
@@ -35,15 +25,29 @@ def display(pathname: str):
     raise
 
 
-app.layout = components.GlobalLayout(
+app.layout = dmc.MantineProvider(
+    theme={
+        "fontFamily": "'Inter', sans-serif",
+        "primaryColor": "indigo",
+        "components": {
+            "Button": {"styles": {"root": {"fontWeight": 400}}},
+            "Alert": {"styles": {"title": {"fontWeight": 500}}},
+            "AvatarGroup": {"styles": {"truncated": {"fontWeight": 500}}},
+        },
+    },
+    inherit=True,
+    withGlobalStyles=True,
+    withNormalizeCSS=True,
     children=[
         dcc.Store(id="store"),
         dcc.Location(id="url", refresh=False),
         components.Navbar.layout(),
+        DashIconify(icon="ion:logo-github", width=30, rotate=0, flip="horizontal"),
         components.MainLayout(id="page"),
         components.Footer.layout(),
     ],
 )
+
 
 app.clientside_callback(
     """

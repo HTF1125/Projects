@@ -2,9 +2,36 @@
 import os
 import sys
 
+
+if os.path.exists(".env"):
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv(".env")
+    except ImportError:
+        pass
+
+
 # add current package to the path.
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.abspath(__file__), "../..")))
 
-from app.web.app import app
+import click
+import app
 
-app.run()
+@click.command()
+@click.argument("task", default="db")
+def cli(task: str) -> None:
+    if task == "db":
+        # logger.info("Running price update")
+        # robo.db.admin.update_px()
+        app.database.admin.update_px()
+    elif task == "web":
+        app.web.main.app.run(debug=True)
+
+        # logger.info("Downloading local replica of the database")
+    # msg = "*" * 20 + "[TASK COMPLETE]" + "*" * 20
+    # logger.info(msg)
+
+
+if __name__ == "__main__":
+    cli()
