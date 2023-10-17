@@ -1,10 +1,8 @@
 """ROBERT"""
 """ROBERT"""
-from typing import Optional, List, Type, Union
-import numpy as np
+from typing import Type, Union
 import pandas as pd
 from app import database
-from app.core import stats
 from app.core import factors
 
 
@@ -15,6 +13,7 @@ class Universe:
     Attributes:
         tickers (List[str]): A list of asset tickers.
     """
+
     cache = {}
 
     def __new__(cls, *args, **kwargs):
@@ -22,18 +21,11 @@ class Universe:
         if isinstance(instance, cls):
             return instance
         instance = super().__new__(cls)
-        instance.cache = {}
         cls.cache.update({cls.__name__: instance})
         return instance
 
-    tickers = []
-
-    def __init__(self, tickers: Optional[List[str]] = None) -> None:
-        """
-        Initialize a Universe object with an empty list of tickers.
-        """
-        self.tickers = tickers if isinstance(tickers, list) else self.tickers
-
+    tickers = {}
+    factors = {}
 
     def get_prices(self) -> pd.DataFrame:
         """
@@ -44,7 +36,7 @@ class Universe:
         """
         key = "PRICE"
         if key not in self.cache:
-            self.cache[key] = database.get_prices(self.tickers)
+            self.cache[key] = database.get_prices(list(self.tickers.keys()))
         return self.cache[key]
 
     def get_volumes(self) -> pd.DataFrame:
@@ -56,15 +48,20 @@ class Universe:
         """
         key = "VOLUME"
         if key not in self.cache:
-            self.cache[key] = database.get_volumes(self.tickers)
+            self.cache[key] = database.get_volumes(list(self.tickers.keys()))
         return self.cache[key]
 
-    def add_factor(self, *args: Union[str, Type["factors.Factor"]]) -> "Universe":
-        if "factors" not in self.cache:
-            self.cache["factors"] = {}
-        for arg in args:
-            key = arg if isinstance(arg, str) else arg.__name__
-            if key not in self.cache["factors"]:
-                arg = getattr(factors, arg) if isinstance(arg, str) else arg
-                self.cache["factors"][key] = arg(self).fit()
+    def add_factor(self, *items: Union[str, Type["factors.Factor"]]) -> "Universe":
+        for item in items:
+            key = item if isinstance(item, str) else item.__name__
+            if key not in self.factors:
+                item = getattr(factors, item) if isinstance(item, str) else item
+                self.factors.update({item.__name__: item(self).fit()})
+        return self
+
+    def add_ticker(self, *items: str) -> "Universe":
+        for item in items:
+            key = item if isinstance(item, str) else item.__name__
+            if key not in self.tickers:
+                self.tickers.update({key: key})
         return self

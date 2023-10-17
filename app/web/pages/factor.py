@@ -10,7 +10,6 @@ from app.web import components
 logger = logging.getLogger(__name__)
 
 
-
 class Factor:
     href = "/factor"
 
@@ -33,72 +32,75 @@ class Factor:
                         dcc.Loading(
                             dcc.Graph(
                                 figure=blank_fig(),
-                                id="factor-backtest-performance",
+                                id="factor-performance-chart",
                                 config={"displayModeBar": False},
                             )
                         )
                     ]
                 ),
-                # components.Container(
-                #     dcc.Loading(
-                #         # components.Table(
-                #         #     id="factor-table",
-                #         #     page_size=10,
-                #         #     sort_action="native",
-                #         #     sort_mode="multi",
-                #         #     page_action="native",
-                #         # ),
-                #     ),
-                # ),
-                html.Div(id="table-factor-result")
-
+                html.Div(id="factor-performance-stats"),
             ]
         )
 
 
-    @staticmethod
-    def get_input():
-        return html.Div(
-            children=[
-                html.Div(
-                    dcc.Dropdown(
-                        options=universes.__all__,
-                        placeholder="Select an Investment Universe",
-                        id="universe-dropdown",
-                        persistence=True,
-                    ),
-                    style={"flex": 1, "padding": "0px 5px"},
-                ),
-                html.Div(
-                    dcc.Dropdown(
-                        options=factors.__all__,
-                        placeholder="Select an Investment Factor",
-                        id="factor-dropdown",
-                        persistence=True,
-                    ),
-                    style={"flex": 1, "padding": "0px 5px"},
-                ),
-            ],
-            style={
-                "display": "flex",
-                "justify-content": "space-between",
-                "align-items": "center",
-                "padding": "10px 20px",
-            },
-        )
 
 import dash_ag_grid as dag
 
 
 @callback(
-    # Output("factor-table", "data"),
-    # Output("factor-table", "columns"),
-    Output("table-factor-result", "children"),
-    Output("factor-backtest-performance", "figure"),
+    Output("factor-performance-chart", "figure"),
+    Output("factor-performance-stats", "children"),
     Input("universe-dropdown", "value"),
 )
-def get_factor_table(universe: str):
+def compute_factor_data(universe: str):
+    cls = getattr(universes, universe)
+    if issubclass(cls, universes.Universe):
+        ins = cls().add_factor(*factors.__all__)
 
+        perfs = [
+            factor.to_performance()
+            for _, factor in ins.factors.items()
+        ]
+        perfs = pd.concat(perfs, axis=1)
+        perf_fig = px.line(perfs)
+        perfs = pd.concat(
+            [
+                stats.cum_return(perfs),
+                stats.ann_return(perfs),
+                stats.ann_volatility(perfs),
+                stats.ann_sharpe(perfs),
+            ],
+            axis=1,
+        ).round(3)
+        data = perfs.reset_index()
+
+        gg = dag.AgGrid(
+            id="cell-double-clicked-grid",
+            rowData=data.to_dict("records"),
+            columnDefs=[{"field": i} for i in data.columns],
+            defaultColDef={
+                "resizable": False,
+                "sortable": True,
+                "filter": True,
+                "minWidth": 125,
+            },
+            columnSize="sizeToFit",
+            getRowId="params.data.State",
+        )
+
+        return perf_fig, gg
+
+
+
+
+# @callback(
+#     # Output("factor-table", "data"),
+#     # Output("factor-table", "columns"),
+#     Output("table-factor-result", "children"),
+#     Output("factor-backtest-performance", "figure"),
+#     Input("universe-dropdown", "value"),
+# )
+def get_factor_table(universe: str):
     uni_instance = getattr(universes, universe)()
     uni_instance.add_factor(*factors.__all__)
     perfs = [
@@ -119,19 +121,18 @@ def get_factor_table(universe: str):
     data = perfs.reset_index()
 
     gg = dag.AgGrid(
-            id="cell-double-clicked-grid",
-            rowData=data.to_dict("records"),
-            columnDefs=[{"field": i} for i in data.columns],
-            defaultColDef={
-                "resizable": False,
-                "sortable": True,
-                "filter": True,
-                "minWidth": 125,
-            },
-            columnSize="sizeToFit",
-            getRowId="params.data.State",
-        )
-
+        id="cell-double-clicked-grid",
+        rowData=data.to_dict("records"),
+        columnDefs=[{"field": i} for i in data.columns],
+        defaultColDef={
+            "resizable": False,
+            "sortable": True,
+            "filter": True,
+            "minWidth": 125,
+        },
+        columnSize="sizeToFit",
+        getRowId="params.data.State",
+    )
 
     return (gg, perf_fig)
 

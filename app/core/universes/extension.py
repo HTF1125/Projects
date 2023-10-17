@@ -2,8 +2,28 @@ from .base import Universe
 
 
 class UsSectors(Universe):
-    tickers = list("XLC, XLY, XLP, XLE, XLF, XLV, XLI, XLB, XLK, XLU, XLRE".split(", "))
+    tickers = {
+        "XLC": "XLC",
+        "XLY": "XLY",
+        "XLP": "XLP",
+        "XLE": "XLE",
+        "XLF": "XLF",
+        "XLV": "XLV",
+        "XLI": "XLI",
+        "XLB": "XLB",
+        "XLK": "XLK",
+        "XLU": "XLU",
+        "XLRE": "XLRE",
+    }
 
 
 class GlobalAllo(Universe):
-    tickers = list("SPY, AGG, TLT, GSG, TIP, IVV, GLD".split(", "))
+    tickers = {
+        "SPY": "SPY",
+        "AGG": "AGG",
+        "TLT": "TLT",
+        "GSG": "GSG",
+        "TIP": "TIP",
+        "IVV": "IVV",
+        "GLD": "GLD",
+    }

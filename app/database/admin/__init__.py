@@ -49,44 +49,49 @@ def update_px():
 
     with Session() as session:
         for meta in session.query(TbMeta).order_by(TbMeta.source).all():
-            if meta.source == "YAHOO":
-                data = yf.download(
-                    tickers=meta.source_code,
-                    actions=True,
-                    progress=False,
-                ).reset_index()
-                rename = {
-                    "Date": "date",
-                    "Open": "px_open",
-                    "High": "px_high",
-                    "Low": "px_low",
-                    "Close": "px_close",
-                    "Adj Close": "px_adj_close",
-                    "Volume": "px_volume",
-                    "Dividends": "px_dvds",
-                    "Stock Splits": "px_splits",
-                }
-                data = data.rename(columns=rename)
-            elif meta.source == "FRED":
-                data = pdr.DataReader(
-                    name=meta.source_code,
-                    data_source="fred",
-                    start="1900-1-1",
-                    end=Timestamp("now"),
-                )
-                if meta.frequency not in ["D", "W"]:
-                    data = data.resample(meta.frequency).last().ffill()
-                data = data.reset_index()
-                data.columns = ["date", "px_adj_close"]
-            else:
-                continue
-            if isinstance(data, pd.DataFrame):
-                data["meta_id"] = meta.id
-                data = data.dropna()
-                session.query(TbPxDaily).where(TbPxDaily.meta_id == meta.id).delete()
-                session.flush()
-                session.bulk_insert_mappings(TbPxDaily, data.to_dict("records"))
-                session.commit()
+            try:
+                if meta.source == "YAHOO":
+                    data = yf.download(
+                        tickers=meta.source_code,
+                        actions=True,
+                        progress=False,
+                    ).reset_index()
+                    rename = {
+                        "Date": "date",
+                        "Open": "px_open",
+                        "High": "px_high",
+                        "Low": "px_low",
+                        "Close": "px_close",
+                        "Adj Close": "px_adj_close",
+                        "Volume": "px_volume",
+                        "Dividends": "px_dvds",
+                        "Stock Splits": "px_splits",
+                    }
+                    data = data.rename(columns=rename)
+                elif meta.source == "FRED":
+                    data = pdr.DataReader(
+                        name=meta.source_code,
+                        data_source="fred",
+                        start="1900-1-1",
+                        end=Timestamp("now"),
+                    )
+                    if meta.frequency not in ["D", "W"]:
+                        data = data.resample(meta.frequency).last().ffill()
+                    data = data.reset_index()
+                    data.columns = ["date", "px_adj_close"]
+                else:
+                    continue
+                if isinstance(data, pd.DataFrame):
+                    data["meta_id"] = meta.id
+                    data = data.dropna()
+                    session.query(TbPxDaily).where(
+                        TbPxDaily.meta_id == meta.id
+                    ).delete()
+                    session.flush()
+                    session.bulk_insert_mappings(TbPxDaily, data.to_dict("records"))
+                    session.commit()
+            except Exception as exc:
+                logger.exception(exc)
 
 
 def download_db() -> None:

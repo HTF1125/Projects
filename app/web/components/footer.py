@@ -20,30 +20,30 @@ class Footer:
         return html.Div(
             style={
                 "position": "relative",
-                "min-height": "20vh",
+                # "min-height": "20vh",
                 "width": "100%",
             },
             children=[
                 html.Div(
                     children=[
-                        html.H4("Welcome to My Dash App"),
+                        html.Hr(),
+                        html.H5("Welcome to RobertDashboard"),
                         html.P("This is the main content of the application."),
                     ],
                     style={
-                        "padding-bottom": "2px"
+                        "padding": "2px, 20px"
                     },  # Adjust padding to reduce the space
                 ),
                 html.Div(
                     style={
                         "text-align": "center",
-                        "padding": "10px",
                         "background-color": "#f4f4f4",
                         "position": "absolute",
                         "left": 0,
                         "bottom": 0,
                         "width": "100%",
                     },
-                    children=[html.Footer("This is the footer")],
+                    children=[html.Footer("Robert")],
                 ),
             ],
         )
