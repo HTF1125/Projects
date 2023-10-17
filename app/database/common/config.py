@@ -7,7 +7,7 @@ class Config:
 
     ENV = "AUTO"
     LOCAL_URL = "sqlite:///app/database/db.db"
-    PGSQL_URL = os.environ.get("DB_URL", None)
+    PGSQL_URL = os.environ.get("POSTGRESQL_URL", None)
 
     @classmethod
     def use_auto(cls):

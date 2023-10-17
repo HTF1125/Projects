@@ -1,5 +1,6 @@
 import logging
 from dash import html, dcc, callback, Output, Input, State
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -43,7 +44,6 @@ class Factor:
         )
 
 
-
 import dash_ag_grid as dag
 
 
@@ -55,15 +55,11 @@ import dash_ag_grid as dag
 def compute_factor_data(universe: str):
     cls = getattr(universes, universe)
     if issubclass(cls, universes.Universe):
-        ins = cls().add_factor(*factors.__all__)
-
-        perfs = [
-            factor.to_performance()
-            for _, factor in ins.factors.items()
-        ]
-        perfs = pd.concat(perfs, axis=1)
-        perf_fig = px.line(perfs)
+        ins = cls.instance().add_factor(*factors.__all__)
         perfs = pd.concat(
+            [factor.to_performance() for _, factor in ins.factors.items()], axis=1
+        )
+        mete = pd.concat(
             [
                 stats.cum_return(perfs),
                 stats.ann_return(perfs),
@@ -72,7 +68,7 @@ def compute_factor_data(universe: str):
             ],
             axis=1,
         ).round(3)
-        data = perfs.reset_index()
+        data = mete.reset_index().sort_values(by="AnnSharpe", ascending=False)
 
         gg = dag.AgGrid(
             id="cell-double-clicked-grid",
@@ -88,53 +84,9 @@ def compute_factor_data(universe: str):
             getRowId="params.data.State",
         )
 
+        indices = np.linspace(0, perfs.shape[0] - 1, 50, dtype=int)
+        perf_fig = px.line(perfs.iloc[indices])
         return perf_fig, gg
-
-
-
-
-# @callback(
-#     # Output("factor-table", "data"),
-#     # Output("factor-table", "columns"),
-#     Output("table-factor-result", "children"),
-#     Output("factor-backtest-performance", "figure"),
-#     Input("universe-dropdown", "value"),
-# )
-def get_factor_table(universe: str):
-    uni_instance = getattr(universes, universe)()
-    uni_instance.add_factor(*factors.__all__)
-    perfs = [
-        factor.to_performance()
-        for name, factor in uni_instance.cache["factors"].items()
-    ]
-    perfs = pd.concat(perfs, axis=1)
-    perf_fig = px.line(perfs)
-    perfs = pd.concat(
-        [
-            stats.cum_return(perfs),
-            stats.ann_return(perfs),
-            stats.ann_volatility(perfs),
-            stats.ann_sharpe(perfs),
-        ],
-        axis=1,
-    ).round(3)
-    data = perfs.reset_index()
-
-    gg = dag.AgGrid(
-        id="cell-double-clicked-grid",
-        rowData=data.to_dict("records"),
-        columnDefs=[{"field": i} for i in data.columns],
-        defaultColDef={
-            "resizable": False,
-            "sortable": True,
-            "filter": True,
-            "minWidth": 125,
-        },
-        columnSize="sizeToFit",
-        getRowId="params.data.State",
-    )
-
-    return (gg, perf_fig)
 
 
 def blank_fig():

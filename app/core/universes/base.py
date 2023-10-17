@@ -1,6 +1,6 @@
 """ROBERT"""
 """ROBERT"""
-from typing import Type, Union
+from typing import Type, Union, Dict
 import pandas as pd
 from app import database
 from app.core import factors
@@ -22,10 +22,23 @@ class Universe:
             return instance
         instance = super().__new__(cls)
         cls.cache.update({cls.__name__: instance})
+        instance.cache = {}
         return instance
 
-    tickers = {}
-    factors = {}
+    @classmethod
+    def instance(cls) -> "Universe":
+        return cls(
+            tickers=getattr(cls, "tickers", {}),
+            factors=getattr(cls, "factors", {}),
+        )
+
+    def __init__(
+        self,
+        tickers: Dict = {},
+        factors: Dict = {},
+    ) -> None:
+        self.tickers = tickers
+        self.factors = factors
 
     def get_prices(self) -> pd.DataFrame:
         """
@@ -34,10 +47,9 @@ class Universe:
         Returns:
             pd.DataFrame: A DataFrame containing historical prices for the tickers.
         """
-        key = "PRICE"
-        if key not in self.cache:
-            self.cache[key] = database.get_prices(list(self.tickers.keys()))
-        return self.cache[key]
+        if "prices" not in self.cache:
+            self.cache["prices"] = database.get_prices(tickers=list(self.tickers.keys()))
+        return self.cache["prices"]
 
     def get_volumes(self) -> pd.DataFrame:
         """
@@ -46,11 +58,9 @@ class Universe:
         Returns:
             pd.DataFrame: A DataFrame containing historical prices for the tickers.
         """
-        key = "VOLUME"
-        if key not in self.cache:
-            self.cache[key] = database.get_volumes(list(self.tickers.keys()))
-        return self.cache[key]
-
+        if "prices" not in self.cache:
+            self.cache["prices"] = database.get_volumes(tickers=list(self.tickers.keys()))
+        return self.cache["prices"]
     def add_factor(self, *items: Union[str, Type["factors.Factor"]]) -> "Universe":
         for item in items:
             key = item if isinstance(item, str) else item.__name__
