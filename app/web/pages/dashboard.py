@@ -3,6 +3,7 @@ from datetime import date
 from dash import html, dcc, callback, Output, Input, State
 from app import database
 import plotly.express as px
+from app.database.models import TbMarketReport
 
 
 class Dashboard:
@@ -10,7 +11,23 @@ class Dashboard:
 
     @classmethod
     def layout(cls):
-        return (html.H1(__name__),)
+        rep = TbMarketReport.latest()[-1]["content"]
+        return html.Div(
+            children=[
+                html.H1("Market Briefing", style={"text-align": "center"}),
+                html.Hr(),
+                dcc.Markdown(
+                    children=rep,
+                    style={
+                        "width" : "80%",
+                        "color": "blue",
+                        "font-size": "18px",
+                        "font-family": "Calibri",
+                    },
+                ),
+                html.P(""),  # Add an empty paragraph for line break
+            ]
+        )
 
 
 class CapitalMarkets:
@@ -52,5 +69,5 @@ def update_output(start_date, end_date):
     if end_date is not None:
         yields = yields.loc[:end_date]
     n_data = len(yields)
-    yields = yields.ffill().iloc[:: n_data//100, :]
+    yields = yields.ffill().iloc[:: n_data // 100, :]
     return px.line(yields)

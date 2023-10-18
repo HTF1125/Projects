@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from app.core import factors, universes, stats
+from app.core import stats
+from app.api import universes, factors
 from app.web import components
 
 
@@ -18,6 +19,7 @@ class Factor:
     def layout(cls):
         return html.Div(
             children=[
+                dcc.Store(id="cache", data={}),
                 html.H1("Factor Analysis"),
                 html.Div(
                     dcc.Dropdown(
@@ -49,13 +51,16 @@ import dash_ag_grid as dag
 
 @callback(
     Output("factor-performance-chart", "figure"),
-    Output("factor-performance-stats", "children"),
     Input("universe-dropdown", "value"),
+    State("cache", "data"),
 )
-def compute_factor_data(universe: str):
+def compute_factor_data(universe: str, cache: dict):
+    if universe in cache:
+        if "chart" in cache[universe]:
+            return cache[universe]["chart"]
     cls = getattr(universes, universe)
     if issubclass(cls, universes.Universe):
-        ins = cls.instance().add_factor(*factors.__all__)
+        ins = cls().add_factors(*factors.__all__)
         perfs = pd.concat(
             [factor.to_performance() for _, factor in ins.factors.items()], axis=1
         )
@@ -68,12 +73,12 @@ def compute_factor_data(universe: str):
             ],
             axis=1,
         ).round(3)
-        data = mete.reset_index().sort_values(by="AnnSharpe", ascending=False)
+        d = mete.reset_index().sort_values(by="AnnSharpe", ascending=False)
 
         gg = dag.AgGrid(
             id="cell-double-clicked-grid",
-            rowData=data.to_dict("records"),
-            columnDefs=[{"field": i} for i in data.columns],
+            rowData=d.to_dict("records"),
+            columnDefs=[{"field": i} for i in d.columns],
             defaultColDef={
                 "resizable": False,
                 "sortable": True,
@@ -84,9 +89,42 @@ def compute_factor_data(universe: str):
             getRowId="params.data.State",
         )
 
-        indices = np.linspace(0, perfs.shape[0] - 1, 50, dtype=int)
-        perf_fig = px.line(perfs.iloc[indices])
-        return perf_fig, gg
+        fig = go.Figure()
+
+        for f_name, f_instance in ins.factors.items():
+            _perf = f_instance.to_performance()
+            indices = np.linspace(0, _perf.shape[0] - 1, 50, dtype=int)
+            _perf = _perf.iloc[indices]
+            fig.add_trace(
+                trace=go.Scatter(
+                    x=_perf.index,
+                    y=_perf.values,
+                    name=f_name,
+                )
+            )
+        fig.update_layout(
+            # plot_bgcolor='rgba(0,0,0,0)',  # Set plot background color as transparent
+            # paper_bgcolor='rgba(0,0,0,0)',  # Set paper background color as transparent
+            # showlegend=False,  # Hide the legend for a cleaner border look
+            # autosize=False,  # Disable autosizing to maintain border consistency
+            # width=600,  # Set the width of the chart
+            # height=height,  # Set the height of the chart
+            # margin=dict(l=20, r=20),  # Adjust the margins as needed
+            # paper_bordercolor='black',  # Set the border color
+            # paper_borderwidth=1  # Set the border width
+            # hovermode="x unified",
+            legend={
+                "orientation": "h",
+                "xanchor": "center",
+                "x": 0.5,
+                "y": -0.3,
+                "yanchor": "top",
+                "itemsizing": "constant",
+                # "font": {"size": 12},
+            },
+            margin={"t": 0, "l": 0, "r": 0, "b": 0},
+        )
+        return fig
 
 
 def blank_fig():
@@ -95,3 +133,16 @@ def blank_fig():
     fig.update_xaxes(showgrid=False, showticklabels=False, zeroline=False)
     fig.update_yaxes(showgrid=False, showticklabels=False, zeroline=False)
     return fig
+
+
+@callback(
+    Output("cache", "data"),
+    Input("factor-performance-chart", "figure"),
+    State("universe-dropdown", "value"),
+    State("cache", "data"),
+)
+def cache_plt(chart, universe, cache):
+    if universe not in cache:
+        cache[universe] = {}
+    cache[universe].update({"chart": chart})
+    return cache

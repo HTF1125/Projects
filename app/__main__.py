@@ -31,6 +31,10 @@ def cli(task: str) -> None:
     elif task == "web":
         logger.info("Launching Web...")
         app.web.main.app.run(debug=True)
+    elif task == "report":
+        from app.tasks.MarketDaily import get_report
+        report = get_report()
+        print(report)
 
     msg = "*" * 20 + "[TASK COMPLETE]" + "*" * 20
     logger.info(msg)
