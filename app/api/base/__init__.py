@@ -28,13 +28,13 @@ class Universe:
             self.factors = {}
 
     def add_factors(self, *items: Union[str, Type["Factor"]]) -> "Universe":
-        exts = importlib.import_module(name="app.api.factors")
+        from app.api import factors
         for item in items:
             if isinstance(item, str):
-                if not item in exts.__all__:
+                if not item in factors.__all__:
                     warnings.warn(f"factor {item} does not exist.")
                     continue
-                item = getattr(exts, item)
+                item = getattr(factors, item)
             name = item.__name__
             if name not in self.factors:
                 factor = item(universe=self)
