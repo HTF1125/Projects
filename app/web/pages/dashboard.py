@@ -4,6 +4,7 @@ from dash import html, dcc, callback, Output, Input, State
 from app import database
 import plotly.express as px
 from app.database.models import TbMarketReport
+import dash_bootstrap_components as dbc
 
 
 class Dashboard:
@@ -16,14 +17,19 @@ class Dashboard:
             children=[
                 html.H1("Market Briefing", style={"text-align": "center"}),
                 html.Hr(),
-                dcc.Markdown(
-                    children=rep,
-                    style={
-                        "width" : "80%",
-                        "color": "blue",
-                        "font-size": "18px",
-                        "font-family": "Calibri",
-                    },
+                dbc.Placeholder(
+                    children=dbc.Card(
+                        dbc.CardBody(
+                            children=dcc.Markdown(
+                                children=rep,
+                                style={
+                                    "color": "blue",
+                                    "font-size": "18px",
+                                    "font-family": "Calibri",
+                                },
+                            )
+                        )
+                    )
                 ),
                 html.P(""),  # Add an empty paragraph for line break
             ]

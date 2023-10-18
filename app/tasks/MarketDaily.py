@@ -58,26 +58,40 @@ Just reply `Complete` when you are done.
     def generate(self):
         self.report = self.chat(
             f"""
-Please generate a daily market briefing directed towards investors.
-Provide insights into crucial global market movements, encompassing
-major indexes, country-specific trends, yield fluctuations,
-significant macroeconomic indicators, and shifts across diverse
-asset classes. It's important to maintain a conversational tone
-that engages the investors effectively.
+Objective: Your task is to create a daily market briefing report that provides investors with a
+comprehensive understanding of the day's global market activities and trends. This report should
+offer valuable insights and analysis while maintaining an engaging and accessible tone.
+(In markdown format)
 
-Ensure the report is presented as a cohesive narrative without
-dividing it into sections. Please refrain from including any
-introduction page, references to individuals, or sponsors.
+Tone and Style:
 
-Additionally, limit the technical analysis and information on
-single securities to less than 10% of the total content.
-The report's length should be within the range of 500 to 600 words.
+Conversational Tone: Write the report in a conversational tone that effectively engages investors.
+The language should be clear and accessible.
 
-Your primary goal is to offer a concise yet comprehensive overview
-of the market's daily performance and trends.
+No Technical Jargon: Avoid overwhelming the report with technical jargon. Make sure to offer key
+takeaways and insights without diving into overly technical details.
 
-Emphasize accessibility and provide valuable insights and guidance
-to aid investors in their decision-making process.
+Structure and Presentation:
+
+Cohesive Narrative: Deliver the report as a cohesive narrative. Avoid dividing it into sections.
+Ensure that the report flows smoothly and is easy to follow.
+
+No References to Individuals or Sponsors: Exclude any references to individuals or sponsors in the
+report.
+
+Technical Analysis and Securities: Limit the inclusion of technical analysis and information on
+individual securities to less than 5% of the total content. The report should provide a broader
+market overview rather than delving into individual securities.
+
+Utilization of Trustworthy Sources: You are welcome to utilize content from other trustworthy
+sources to enhance the credibility and depth of the report.
+
+Length: The length of the report should be more than 500 words, providing substantial information
+while maintaining brevity and relevance.
+
+Focus on Accessibility and Clarity: Your primary goal is to aid investors in their decision-making
+process. Emphasize accessibility and clarity in the presentation of market performance and trends.
+
 """
         )
         return self.report
@@ -125,6 +139,21 @@ def get_report():
             "name": "Real Vision",
             "id": "UCBH5VZE_Y4F3CMcPIzPEB5A",
             "link": "https://www.youtube.com/channel/UCBH5VZE_Y4F3CMcPIzPEB5A",
+        },
+        {
+            "name": "Top Traders Unplugged",
+            "id": "UCt-_RaV_mFlyXDmhYnIm0Ug",
+            "link": "https://www.youtube.com/channel/UCt-_RaV_mFlyXDmhYnIm0Ug",
+        },
+        {
+            "name": "Investor Center",
+            "id": "UC2cL3pI1H3tiozKif6A8fmA",
+            "link": "https://www.youtube.com/channel/UC2cL3pI1H3tiozKif6A8fmA",
+        },
+        {
+            "name": "Mauldin Economics",
+            "id": "UCUb-ua-LxOZ1d6WhThgMGRA",
+            "link": "https://www.youtube.com/channel/UCUb-ua-LxOZ1d6WhThgMGRA",
         },
     ]
 
