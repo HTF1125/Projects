@@ -58,39 +58,24 @@ Just reply `Complete` when you are done.
     def generate(self):
         self.report = self.chat(
             f"""
-Objective: Your task is to create a daily market briefing report that provides investors with a
-comprehensive understanding of the day's global market activities and trends. This report should
-offer valuable insights and analysis while maintaining an engaging and accessible tone.
-(In markdown format)
+Now generate the daily market briefing. (in markdown format)
 
-Tone and Style:
+The report should provide a comprehensive understanding of the day's global market activities and
+trends. It shoudl offer valuable insights and analysis on the investment and global macro economics.
 
-Conversational Tone: Write the report in a conversational tone that effectively engages investors.
-The language should be clear and accessible.
+Craft the briefing in a conversational tone that effectively engages investors, offering key
+takeaways without overwhelming technical jargon. Please ensure that the content remains focused on
+providing insightful analysis, omitting disclaimers and general information.
 
-No Technical Jargon: Avoid overwhelming the report with technical jargon. Make sure to offer key
-takeaways and insights without diving into overly technical details.
+While delivering a cohesive narrative, avoid dividing the report into sections and exclude any
+references to individuals or sponsors. Your primary objective is to aid investors in their
+decision-making process by emphasizing accessibility and clarity in the presentation of global
+market and economic status and trends.
 
-Structure and Presentation:
+Lastly, the report should not include any individual stocks analysis/information.
 
-Cohesive Narrative: Deliver the report as a cohesive narrative. Avoid dividing it into sections.
-Ensure that the report flows smoothly and is easy to follow.
-
-No References to Individuals or Sponsors: Exclude any references to individuals or sponsors in the
-report.
-
-Technical Analysis and Securities: Limit the inclusion of technical analysis and information on
-individual securities to less than 5% of the total content. The report should provide a broader
-market overview rather than delving into individual securities.
-
-Utilization of Trustworthy Sources: You are welcome to utilize content from other trustworthy
-sources to enhance the credibility and depth of the report.
-
-Length: The length of the report should be more than 500 words, providing substantial information
-while maintaining brevity and relevance.
-
-Focus on Accessibility and Clarity: Your primary goal is to aid investors in their decision-making
-process. Emphasize accessibility and clarity in the presentation of market performance and trends.
+The length of the report should range between 500 and 600 words,
+emphasizing only the most pertinent information for investors.
 
 """
         )
@@ -188,18 +173,6 @@ def get_report():
                 chat.watch_youtube(l)
 
             chat.generate()
-
-            import json
-
-            # Define the file path
-            file_path = "report.json"
-
-            # Save data to the JSON file
-            with open(file_path, "w") as json_file:
-                json.dump(chat.messages, json_file, indent=4)  #
-
-            print("complete.")
-
             TbMarketReport.add(report=chat.messages)
 
             return chat.report
