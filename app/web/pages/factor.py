@@ -1,5 +1,8 @@
 import logging
 from dash import html, dcc, callback, Output, Input, State
+import dash_mantine_components as dmc
+from dash_iconify import DashIconify
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -7,6 +10,16 @@ import plotly.graph_objects as go
 from app import core
 from app.web import components
 from app.api import Universe, MultiFactors
+
+
+style = {
+    "height": 100,
+    # "border": f"1px solid {dmc.theme.DEFAULT_COLORS['indigo'][4]}",
+    "marginTop": 20,
+    "marginBottom": 20,
+    "display": "flex",
+}
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,13 +34,56 @@ class Factor:
                 dcc.Store(id="cache", data={}),
                 html.H1("Factor Analysis"),
                 html.Div(
-                    dcc.Dropdown(
-                        options=list(Universe.UNIVERSE.keys()),
-                        placeholder="Select an Investment Universe",
-                        id="universe-dropdown",
-                        persistence=True,
-                    ),
-                    style={"flex": 1, "padding": "0px 5px"},
+                    children=[
+                        dmc.Group(
+                            [
+                                dmc.Select(
+                                    label="Investment Universe",
+                                    data=list(Universe.UNIVERSE.keys()),
+                                    id="user-universe",
+                                    value=list(Universe.UNIVERSE.keys())[0],
+                                    style={"width": 200},
+                                    persistence=True,
+                                ),
+                                dmc.NumberInput(
+                                    label="Investment Horizon in Days",
+                                    id="user-periods",
+                                    value=5,
+                                    min=0,
+                                    max=250,
+                                    step=5,
+                                    style={"width": 200},
+                                    persistence=True,
+                                ),
+                                dmc.NumberInput(
+                                    label="Trade Commission in bps",
+                                    id="user-commission",
+                                    value=10,
+                                    min=0,
+                                    max=100,
+                                    step=2,
+                                    style={"width": 200},
+                                    persistence=True,
+                                ),
+                            ],
+                            style=style,
+                        ),
+                        html.Div(
+                            dmc.Button(
+                                "Load from database",
+                                id="user-start-test",
+                                leftIcon=DashIconify(
+                                    icon="fluent:database-plug-connected-20-filled"
+                                ),
+                                style={
+                                    "marginTop": 20,
+                                    "marginBottom": 20,
+                                    "text-align": "right",
+                                },
+                            ),
+                            style={"display": "flex", "justify-content": "flex-end"},
+                        ),
+                    ],
                 ),
                 components.Container(
                     [
@@ -52,17 +108,30 @@ import dash_ag_grid as dag
 @callback(
     Output("factor-performance-chart", "figure"),
     Output("factor-performance-table", "children"),
-    Input("universe-dropdown", "value"),
+    Input("user-universe", "value"),
+    State("user-periods", "value"),
+    State("user-commission", "value"),
     State("cache", "chart"),
     State("cache", "table"),
 )
-def compute_factor_data(universe: str, cache_chart: dict, cache_table: dict):
+def compute_factor_data(
+    universe: str,
+    periods: int,
+    commission: int,
+    cache_chart: dict,
+    cache_table: dict,
+):
     if cache_chart is not None and cache_table is not None:
-        if cache_chart.get(universe) is not None and cache_table.get(universe) is not None:
+        if (
+            cache_chart.get(universe) is not None
+            and cache_table.get(universe) is not None
+        ):
             return cache_chart.get(universe), cache_table.get(universe)
 
     multi_factors = MultiFactors(Universe.from_code(code=universe))
-    performances = multi_factors.to_performance(commission=10).ffill()
+    performances = multi_factors.to_performance(
+        periods=periods, commission=commission
+    ).ffill()
 
     mete = pd.concat(
         [
@@ -132,7 +201,7 @@ def blank_fig():
 @callback(
     Output("cache", "chart"),
     Input("factor-performance-chart", "figure"),
-    State("universe-dropdown", "value"),
+    State("user-universe", "value"),
     State("cache", "chart"),
 )
 def cache_plt(chart, universe, cache):
@@ -143,7 +212,7 @@ def cache_plt(chart, universe, cache):
 @callback(
     Output("cache", "table"),
     Input("factor-performance-table", "children"),
-    State("universe-dropdown", "value"),
+    State("user-universe", "value"),
     State("cache", "table"),
 )
 def cache_table(table, universe, cache):
