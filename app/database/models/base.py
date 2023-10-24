@@ -35,11 +35,8 @@ class TbBase(Base):
     @classmethod
     def insert(cls, records):
         with Session() as session:
-            try:
-                session.bulk_insert_mappings(cls, records)
-                session.commit()
-            except Exception:
-                session.rollback()
+            session.bulk_insert_mappings(cls, records)
+            session.commit()
 
     @classmethod
     def update(cls, records):
@@ -59,7 +56,6 @@ class TbBase(Base):
             except Exception:
                 session.rollback()
 
-
     @classmethod
     def has(cls, **kwargs) -> bool:
         stmt = select(cls).filter_by(**kwargs)
@@ -67,3 +63,8 @@ class TbBase(Base):
             if session.query(stmt.exists()).scalar():
                 return True
             return False
+
+    def save(self) -> bool:
+        with Session() as session:
+            session.add(self)
+            session.commit()

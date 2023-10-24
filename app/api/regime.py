@@ -1,7 +1,6 @@
 """ROBERT"""
 import pandas as pd
-from app import database
-from app.core import stats
+from app import database, core
 
 
 class Regime:
@@ -16,13 +15,13 @@ class Regime:
     def forward_return_by_state(
         self, prices: pd.DataFrame, periods: int = 21
     ) -> pd.DataFrame:
-        forward_return = stats.log_return(
+        forward_return = core.log_return(
             data=prices,
             periods=periods,
             forward=True,
         ).multiply(252 / periods)
         forward_return["__state__"] = self.states.reindex(forward_return.index).ffill()
-        return forward_return.groupby(by="state").mean()
+        return forward_return.groupby(by="__state__").mean()
 
 
 class UsLei(Regime):

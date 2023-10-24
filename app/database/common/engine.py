@@ -4,9 +4,9 @@ import warnings
 from sqlalchemy import engine
 from app.database.common.config import Config
 
-local_engine = engine.create_engine(url=Config.LOCAL_URL, echo=False)
+local_engine = engine.create_engine(url=Config.LOCAL_URL, echo=True)
 if Config.PGSQL_URL is not None:
-    pgsql_engine = engine.create_engine(url=Config.PGSQL_URL, echo=False)
+    pgsql_engine = engine.create_engine(url=Config.PGSQL_URL, echo=True)
 else:
     pgsql_engine = None
 
