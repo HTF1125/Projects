@@ -71,3 +71,26 @@ class VolState(Regime):
             lambda x: self.__state__[0] if x < 0.8 else self.__state__[1]
         )
         return self
+
+
+class AbsorptionRatio(Regime):
+    __states__ = ("HighAR", "LowAR")
+
+    def fit(self) -> Regime:
+        pxs = database.get_prices(
+            tickers="SPY, IEF, TLT, EZU, VPL, EEM, GLD, RWR, EMB, TIP, USDKRW, ^N225, ^KS11"
+        ).dropna()
+        log_return = core.log_return(pxs).dropna()
+        result = {}
+        for i in log_return.resample("M").last().iloc[12:].index:
+            exp_ratio = core.get_explained_variance_ratio(
+                log_return.loc[:i].iloc[-252:]
+            )
+            result[i] = exp_ratio
+        result = pd.Series(result)
+        result = (result - result.rolling(12).mean()) / result.rolling(12).std()
+        result = result.reindex(log_return.index).ffill()
+        self.states = result.dropna().map(
+            lambda x: self.__states__[0] if x > 0 else self.__states__[1]
+        )
+        return self

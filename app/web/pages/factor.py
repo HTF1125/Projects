@@ -9,13 +9,14 @@ import plotly.graph_objects as go
 from app import core
 from app.web import components
 from app.api import Universe, MultiFactors
-
+from .. import components
 
 logger = logging.getLogger(__name__)
 
-
-class Factor:
+from .dashboard import Page
+class Factor(Page):
     href = "/factor"
+    icon = "antd-dot-chart"
 
     @classmethod
     def layout(cls):
@@ -25,42 +26,7 @@ class Factor:
                 html.H1("Factor Analysis"),
                 html.Div(
                     children=[
-                        dmc.Group(
-                            [
-                                dmc.Select(
-                                    label="Investment Universe",
-                                    data=list(Universe.UNIVERSE.keys()),
-                                    id="user-universe",
-                                    value=list(Universe.UNIVERSE.keys())[0],
-                                    persistence=True,
-                                ),
-                                dmc.NumberInput(
-                                    label="Investment Horizon in Days",
-                                    id="user-periods",
-                                    value=5,
-                                    min=0,
-                                    max=250,
-                                    step=5,
-                                    persistence=True,
-                                ),
-                                dmc.NumberInput(
-                                    label="Trade Commission in bps",
-                                    id="user-commission",
-                                    value=10,
-                                    min=0,
-                                    max=100,
-                                    step=2,
-                                    persistence=True,
-                                ),
-                            ],
-                            style={
-                                "margin-top": 0,
-                                "margin-bottom": 10,
-                                "display": "flex",
-                                "justify-content": "center",
-                                "align-items": "center",
-                            },
-                        ),
+                        components.get_factor_args(),
                         html.Div(
                             dmc.Button(
                                 "Run",
@@ -96,7 +62,6 @@ class Factor:
                                     config={"displayModeBar": False},
                                 ),
                             ],
-                            # visible=False,
                         ),
                     ],
                     style={
@@ -184,7 +149,11 @@ def compute_factor_data(
         },
         margin={"t": 0, "l": 0, "r": 0, "b": 0},
     )
-    return fig, gg, f"Factor Performances Universe: {universe} Forward {periods} Days (comm:{commission:.0f}bps)"
+    return (
+        fig,
+        gg,
+        f"Factor Performances Universe: {universe} Forward {periods} Days (comm:{commission:.0f}bps)",
+    )
 
 
 def blank_fig():

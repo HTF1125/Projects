@@ -2,7 +2,9 @@ from typing import Type, Dict
 import numpy as np
 import pandas as pd
 from .universe import Universe
-from .regime import UsLei, VolState
+from .regime import UsLei, VolState, AbsorptionRatio
+
+
 from .. import core
 
 
@@ -11,7 +13,7 @@ class Factor:
         self.universe = universe
         self.data = self.fit()
 
-    def fit(self) ->                               pd.DataFrame:
+    def fit(self) -> pd.DataFrame:
         raise NotImplementedError("Must implement `fit` method for `Factor` class.")
 
     @property
@@ -27,10 +29,7 @@ class Factor:
         pri = self.universe.get_prices()
         fwd = core.pri_return(pri, periods=21, forward=True)
         ic = (
-            core.information_coefficient(self.weights, fwd)
-            .dropna()
-            .rolling(252)
-            .mean()
+            core.information_coefficient(self.weights, fwd).dropna().rolling(252).mean()
         )
         return ic
 
@@ -228,6 +227,12 @@ class VolState5Y(UsLei5Y):
     regime = VolState
 
 
+class Absorption1Y(UsLei5Y):
+    years = 5
+    min_years = 1
+    regime = AbsorptionRatio
+
+
 class PxRsi50(Factor):
     periods: int = 50
 
@@ -235,6 +240,13 @@ class PxRsi50(Factor):
         prices = self.universe.get_prices()
         rsi = core.RSI(prices, self.periods).clip(lower=0.2, upper=0.8)
         return rsi
+
+
+class PxBBand50(Factor):
+    periods: int = 50
+
+    def fit(self) -> pd.DataFrame:
+        return core.BBand(self.universe.get_prices(), self.periods)
 
 
 class MultiFactors:
@@ -265,6 +277,8 @@ class MultiFactors:
         "UsLei5Y": UsLei5Y,
         "UsLei10Y": UsLei10Y,
         "VolState5Y": VolState5Y,
+        # "Absorption1Y": Absorption1Y,
+        "PxBBand50" : PxBBand50,
     }
 
     def __init__(self, universe: Universe) -> None:

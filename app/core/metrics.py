@@ -287,46 +287,15 @@ def information_coefficient(
     return info_coefficient
 
 
-####################################################################################################
-# Uncategorized
-####################################################################################################
-def SMA(
-    data: Union[pd.Series, pd.DataFrame], window: int = 5
-) -> Union[pd.Series, pd.DataFrame]:
-    return data.rolling(window=window).mean()
 
 
-def EMA(
-    data: Union[pd.Series, pd.DataFrame], window: int = 5
-) -> Union[pd.Series, pd.DataFrame]:
-    return data.ewm(span=window).mean()
+def get_explained_variance_ratio(data):
+    from sklearn.decomposition import PCA
+    from .preprocess import standard_scaler
 
-
-def MACD(
-    data: Union[pd.Series, pd.DataFrame],
-    window1: int = 12,
-    window2: int = 26,
-    window3: int = 9,
-) -> Union[pd.Series, pd.DataFrame]:
-    ema1 = EMA(data=data, window=window1)
-    ema2 = EMA(data=data, window=window2)
-    macd = ema1 - ema2
-    macd_s = EMA(data=macd, window=window3)
-    return macd_s - macd
-
-
-def RMA(close: pd.DataFrame, periods: int = 10) -> pd.DataFrame:
-    return close.ewm(alpha=(1.0 / periods)).mean()
-
-
-def RSI(
-    close: pd.DataFrame,
-    periods: int = 26,
-) -> pd.DataFrame:
-    pos = close.diff()
-    neg = pos.copy()
-    pos[pos < 0] = 0
-    neg[neg > 0] = 0
-    pos_rma = RMA(close=pos, periods=periods)
-    neg_rma = RMA(close=neg, periods=periods)
-    return pos_rma / (pos_rma + neg_rma.abs())
+    normalized_data = standard_scaler(data=data, axis=1)
+    normalized_data = (data - data.mean()) / data.std()
+    pca = PCA(n_components=5)
+    pca.fit_transform(normalized_data.values)
+    explained_variance_ratio = np.sum(pca.explained_variance_ratio_[:3])
+    return explained_variance_ratio

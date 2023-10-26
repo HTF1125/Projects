@@ -5,9 +5,19 @@ from app import database
 import plotly.express as px
 from app.database.models import TbMarketReport
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 
 
-class Dashboard:
+
+from ..components import log_in
+
+class Page():
+    icon = "antd-home"
+
+
+
+
+class Dashboard(Page):
     href = "/"
 
     @classmethod
@@ -36,13 +46,15 @@ class Dashboard:
         )
 
 
-class CapitalMarkets:
+class CapitalMarkets(Page):
     href = "/capitalmarkets"
+    icon = "antd-global"
 
     @classmethod
     def layout(cls):
         return html.Div(
             children=[
+                log_in(),
                 html.H1(__name__),
                 dcc.DatePickerRange(
                     id="my-date-picker-range",

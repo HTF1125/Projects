@@ -1,5 +1,5 @@
-from dash import Dash, dcc
-from dash import callback, Output, Input
+from dash import Dash, dcc, html
+from dash import callback, Output, Input, State
 from app.web import pages, components
 
 
@@ -10,10 +10,11 @@ app = Dash(
 )
 
 server = app.server
+from .layout import PageLayout
 
 
 @callback(
-    Output("page", "children"),
+    Output("content-section", "children"),
     Input("url", "pathname"),
 )
 def display(pathname: str):
@@ -26,12 +27,13 @@ def display(pathname: str):
 app.layout = components.GlobalLayout(
     children=[
         dcc.Store(id="store"),
+        dcc.Store(id="status"),
         dcc.Location(id="url", refresh=False),
-        components.Navbar.layout(),
+        PageLayout(),
         components.MainLayout(id="page"),
-        components.Footer.layout(),
     ],
 )
+
 
 
 app.clientside_callback(

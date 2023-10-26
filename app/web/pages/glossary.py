@@ -1,8 +1,11 @@
 from dash import html, dcc
 
+from .dashboard import Page
 
-class Glossary:
+
+class Glossary(Page):
     href = "/glossary"
+    icon = "antd-read"
 
     @classmethod
     def layout(cls):
