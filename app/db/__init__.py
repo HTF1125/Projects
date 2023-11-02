@@ -1,10 +1,8 @@
 """ROBERT"""
 from .client import *
-from .common import *
+from .common import Session
+from .common import Engine
 from .events import *
 from .admin import *
 
-
-
-from app.db.common import Engine
 Base.metadata.create_all(Engine())

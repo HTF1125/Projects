@@ -1,48 +1,51 @@
 from typing import Union
 import pandas as pd
 from .metrics import log_return
+import pandas_ta
+
 
 ####################################################################################################
 # Uncategorized
 ####################################################################################################
 def SMA(
-    data: pd.DataFrame,
+    close: pd.Series,
     periods: int = 5,
-) -> pd.DataFrame:
-    return data.rolling(periods).mean()
+) -> pd.Series:
+    return close.rolling(periods).mean()
 
 
-def VOL(
-    data: pd.DataFrame,
+def STDEV(
+    close: pd.Series,
     periods: int = 5,
-) -> pd.DataFrame:
-    return data.rolling(periods).mean()
+) -> pd.Series:
+    return log_return(close.rolling(periods).mean())
 
-def EMA(data: pd.DataFrame, window: int = 5) -> pd.DataFrame:
-    return data.ewm(span=window).mean()
+
+def EMA(close: pd.Series, window: int = 5) -> pd.Series:
+    return close.ewm(span=window).mean()
 
 
 def MACD(
-    data: pd.DataFrame,
+    close: pd.Series,
     window1: int = 12,
     window2: int = 26,
     window3: int = 9,
-) -> pd.DataFrame:
-    ema1 = EMA(data, window=window1)
-    ema2 = EMA(data, window=window2)
+) -> pd.Series:
+    ema1 = EMA(close, window=window1)
+    ema2 = EMA(close, window=window2)
     macd = ema1 - ema2
-    macd_s = EMA(data=macd, window=window3)
+    macd_s = EMA(close=macd, window=window3)
     return macd_s - macd
 
 
-def RMA(close: pd.DataFrame, periods: int = 10) -> pd.DataFrame:
+def RMA(close: pd.Series, periods: int = 10) -> pd.Series:
     return close.ewm(alpha=(1.0 / periods)).mean()
 
 
 def RSI(
-    close: pd.DataFrame,
+    close: pd.Series,
     periods: int = 26,
-) -> pd.DataFrame:
+) -> pd.Series:
     pos = close.diff()
     neg = pos.copy()
     pos[pos < 0] = 0
@@ -52,13 +55,16 @@ def RSI(
     return pos_rma / (pos_rma + neg_rma.abs())
 
 
+def BBand_(close: pd.Series, window: int = 5) -> pd.DataFrame:
+    return None
+
+
 def BBand(
-    close: pd.DataFrame,
+    close: pd.Series,
     periods: int = 20,
-) -> pd.DataFrame:
-    sma = SMA(data=close, periods=periods)
-    vol = VOL(data=close, periods=periods)
+) -> pd.Series:
+    sma = SMA(close=close, periods=periods)
+    vol = STDEV(close=close, periods=periods)
     top = sma + 2 * vol
     bot = sma - 2 * vol
     return (bot - close) / (top - close)
-

@@ -5,16 +5,20 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import scoped_session
 from .engine import Engine
 
+SessionFactor = sessionmaker(bind=Engine())
+ScopedSession = scoped_session(SessionFactor)
 
 @contextmanager
 def Session():
-    """Provide a transactional scope around a series of operations."""
-    session = scoped_session(sessionmaker(bind=Engine()))()
+    """
+    Provide a transactional scope around a series of operations.
+    """
+    session = ScopedSession()
     try:
         yield session
         session.commit()
-    except:
+    except Exception as e:
         session.rollback()
-        raise
+        raise e
     finally:
         session.close()

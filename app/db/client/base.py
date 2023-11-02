@@ -9,6 +9,39 @@ from app.db.models import TbMeta
 from app.db.models import TbPxDaily
 from app.db.models import TbGlossary
 
+from .. import models
+
+
+@lru_cache()
+def get_close(code: str) -> Dict:
+    with Session() as session:
+        query = (
+            session.query(
+                models.TbPxDaily.date,
+                models.TbPxDaily.px_close,
+            )
+            .join(models.TbMeta, models.TbMeta.id == models.TbPxDaily.meta_id)
+            .filter(models.TbMeta.code == code)
+        )
+        return {record[0]: record[1] for record in query.all()}
+@lru_cache()
+def get_adj_close(code: str) -> Dict:
+    with Session() as session:
+        query = (
+            session.query(
+                models.TbPxDaily.date,
+                models.TbPxDaily.px_adj_close,
+            )
+            .join(models.TbMeta, models.TbMeta.id == models.TbPxDaily.meta_id)
+            .filter(models.TbMeta.code == code)
+        )
+        return {record[0]: record[1] for record in query.all()}
+
+
+
+
+
+
 
 @lru_cache()
 def get_prices(tickers: str) -> pd.DataFrame:

@@ -1,7 +1,10 @@
 from typing import Optional, List
 import numpy as np
 import pandas as pd
-from app import db, core
+from .. import core
+from .. import db
+
+
 
 
 class Universe:
@@ -38,28 +41,33 @@ class Universe:
         self.assets = sorted(assets)
 
     def get_prices(self, date: Optional[pd.Timestamp] = None) -> pd.DataFrame:
-        """
-        Retrieve and cache historical prices of the specified tickers.
-
-        Returns:
-            pd.DataFrame: A DataFrame containing historical prices for the tickers.
-        """
-        prices = db.get_prices(tickers=", ".join(self.assets))
+        # get prices
+        data = db.get_prices(tickers=", ".join(self.assets))
         if date is not None:
-            prices = prices.loc[:date]
-        return prices
+            data = data.loc[:date].dropna(how="all", axis=1)
+        return data
 
     def get_volumes(self, date: Optional[pd.Timestamp] = None) -> pd.DataFrame:
-        """
-        Retrieve and cache historical prices of the specified tickers.
-
-        Returns:
-            pd.DataFrame: A DataFrame containing historical prices for the tickers.
-        """
-        volumes = db.get_volumes(tickers=", ".join(self.assets))
+        # get volumes
+        data = db.get_volumes(tickers=", ".join(self.assets))
         if date is not None:
-            volumes = volumes.loc[:date]
-        return volumes
+            data = data.loc[:date].dropna(how="all", axis=1)
+        return data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     def expectation(
         self,
