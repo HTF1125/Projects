@@ -1,6 +1,6 @@
 """ROBERT"""
 import pandas as pd
-from app.database.client.base import get_prices
+from app.db.client.base import get_prices
 
 
 def get_oecd_us_lei() -> pd.Series:

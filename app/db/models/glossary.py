@@ -1,8 +1,8 @@
 """ROBERT"""
 from sqlalchemy import Column, VARCHAR, Text, Integer, JSON
 from sqlalchemy import func
-from app.database.models import TbBase
-from app.database.common import Session
+from app.db.models import TbBase
+from app.db.common import Session
 
 
 class TbGlossary(TbBase):

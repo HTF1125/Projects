@@ -3,8 +3,8 @@ from typing import Dict
 import pandas as pd
 from sqlalchemy import Column, Integer, VARCHAR, Text, Float, Date
 from sqlalchemy import ForeignKey
-from app.database.common import Session
-from app.database.models import TbBase
+from app.db.common import Session
+from app.db.models import TbBase
 
 
 class TbMeta(TbBase):

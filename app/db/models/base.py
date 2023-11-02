@@ -5,7 +5,7 @@ from typing import Dict
 from sqlalchemy import select
 from sqlalchemy import delete
 from sqlalchemy.orm import declarative_base
-from app.database.common import Session
+from app.db.common import Session
 
 logger = logging.getLogger(__name__)
 

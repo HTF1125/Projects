@@ -2,7 +2,7 @@
 import socket
 import warnings
 from sqlalchemy import engine
-from app.database.common.config import Config
+from app.db.common.config import Config
 
 local_engine = engine.create_engine(url=Config.LOCAL_URL, echo=False)
 if Config.PGSQL_URL is not None:

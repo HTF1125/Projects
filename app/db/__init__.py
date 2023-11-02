@@ -6,5 +6,5 @@ from .admin import *
 
 
 
-from app.database.common import Engine
+from app.db.common import Engine
 Base.metadata.create_all(Engine())

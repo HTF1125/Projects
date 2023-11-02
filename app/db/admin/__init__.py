@@ -6,9 +6,9 @@ from pandas import Timestamp
 import pandas as pd
 import yfinance as yf
 import pandas_datareader as pdr
-from app.database import Session, Engine, Config
-from app.database.models import Base, TbMeta, TbPxDaily, TbGlossary
-from app.database.common.engine import local_engine, pgsql_engine
+from app.db import Session, Engine, Config
+from app.db.models import Base, TbMeta, TbPxDaily, TbGlossary
+from app.db.common.engine import local_engine, pgsql_engine
 
 logger = logging.getLogger(__file__)
 

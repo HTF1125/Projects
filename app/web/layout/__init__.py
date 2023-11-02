@@ -43,58 +43,56 @@ class FooterLayout(fac.AntdFooter):
     }
 
 
-from .sidebar import sidebar
+from .sidebar import get_sidebar
+
+
+def get_header():
+    return fac.AntdHeader(
+        fac.AntdTitle(
+            "Welcom To RobertDashboard",
+            level=2,
+            style={"color": "white", "margin": "0"},
+        ),
+        style={
+            "display": "flex",
+            "justifyContent": "center",
+            "alignItems": "center",
+        },
+    )
+
+
+def get_content():
+    return fac.AntdLayout(
+        [
+            fac.AntdContent(html.Div(id="content-section", style={"margin": "20px"})),
+        ],
+        style={
+            "height": "100%",
+        },
+    )
 
 
 def PageLayout():
     return html.Div(
         [
-            # fac.AntdHeader(
-            #     fac.AntdTitle(
-            #         "Header", level=2, style={"color": "white", "margin": "0"}
-            #     ),
-            #     style={
-            #         "display": "flex",
-            #         "justifyContent": "center",
-            #         "alignItems": "center",
-            #     },
-            # ),
+            fac.AntdAffix(
+                get_header(),
+            ),
             fac.AntdLayout(
                 [
-                    sidebar(),
-                    fac.AntdLayout(
-                        [
-                            fac.AntdContent(
-                                html.Div(id="content-section", style={"margin":"20px"})
-                            ),
-                            # fac.AntdFooter(
-                            #     html.Div(
-                            #         fac.AntdTitle(
-                            #             "Footer", level=2, style={"margin": "0"}
-                            #         ),
-                            #         style={
-                            #             "display": "flex",
-                            #             "height": "100%",
-                            #             "justifyContent": "center",
-                            #             "alignItems": "center",
-                            #         },
-                            #     ),
-                            #     style={
-                            #         "backgroundColor": "rgb(193, 193, 193)",
-                            #         "height": "40px",
-                            #         "justifyContent": "center",
-                            #         "alignItems": "center",
-                            #         "position": "relative",
-                            #         "bottom": 0,
-                            #     },
-                            # ),
-                        ],
+                    fac.AntdAffix(
+                        get_sidebar(),
+                        offsetTop=100,
                         style={
                             "height": "100%",
                         },
                     ),
+                    get_content(),
                 ],
-                style={"height": "100%"},
+                style={
+                    "height": "100%",
+                    "min-height": "600px",
+                },
             ),
         ],
         className="sider-demo",

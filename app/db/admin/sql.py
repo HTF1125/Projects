@@ -1,9 +1,9 @@
 """ROBERT"""
 import os
 import pandas as pd
-from app.database.common import Engine
-from app.database.common import Config
-from app.database.models import Base, TbMeta, TbGlossary
+from app.db.common import Engine
+from app.db.common import Config
+from app.db.models import Base, TbMeta, TbGlossary
 
 
 def get_data(sheet_name: str) -> pd.DataFrame:

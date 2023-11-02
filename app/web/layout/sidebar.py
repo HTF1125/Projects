@@ -21,7 +21,7 @@ def toggle_sidebar_collapsed(nClicks, collapsed):
     return True, "antd-right"
 
 
-def sidebar():
+def get_sidebar():
     return fac.AntdSider(
         [
             fac.AntdButton(
@@ -66,5 +66,9 @@ def sidebar():
         collapsedWidth=60,
         trigger=None,
         breakpoint="xl",
-        style={"position": "relative", "margin-right": "20px"},
+        style={
+            "position": "relative",
+            "margin-right": "20px",
+            
+        },
     )

@@ -27,7 +27,7 @@ def cli(task: str) -> None:
     if task == "db":
         logger.info("Updating Database...")
         # robo.db.admin.update_px()
-        app.database.admin.update_px()
+        app.db.admin.update_px()
     elif task == "web":
         logger.info("Launching Web...")
         app.web.main.app.run(debug=True)

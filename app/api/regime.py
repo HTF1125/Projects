@@ -1,6 +1,6 @@
 """ROBERT"""
 import pandas as pd
-from app import database, core
+from app import db, core
 
 
 class Regime:
@@ -48,7 +48,7 @@ class UsLei(Regime):
     __state__ = ("Recovery", "Contraction")
 
     def fit(self) -> "Regime":
-        cli = database.get_oecd_us_lei()
+        cli = db.get_oecd_us_lei()
         cli.index = cli.index + pd.DateOffset(months=1)
         rocc = cli.diff().diff().dropna()
         self.states = rocc.map(
@@ -61,7 +61,7 @@ class VolState(Regime):
     __state__ = "NormalVol", "ExtremeVol"
 
     def fit(self) -> Regime:
-        vix = database.get_vix()
+        vix = db.get_vix()
         roll = vix.rolling(252 * 5)
         mean = roll.mean()
         std = roll.std()
@@ -77,7 +77,7 @@ class AbsorptionRatio(Regime):
     __states__ = ("HighAR", "LowAR")
 
     def fit(self) -> Regime:
-        pxs = database.get_prices(
+        pxs = db.get_prices(
             tickers="SPY, IEF, TLT, EZU, VPL, EEM, GLD, RWR, EMB, TIP, USDKRW, ^N225, ^KS11"
         ).dropna()
         log_return = core.log_return(pxs).dropna()

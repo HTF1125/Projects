@@ -2,7 +2,7 @@ import os
 import openai
 from dotenv import load_dotenv
 from youtubesearchpython import *
-from app.database.models import TbMarketReport
+from app.db.models import TbMarketReport
 
 try:
     # Load environment variables from the .env file

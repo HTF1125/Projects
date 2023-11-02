@@ -13,5 +13,5 @@ logger.addHandler(streamhandler)
 logger.setLevel(logging.DEBUG)
 
 from . import core
-from . import database
+from . import db
 from . import web

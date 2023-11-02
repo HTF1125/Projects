@@ -9,7 +9,6 @@
     "editor.fontFamily": "JetBrains Mono, monospace",
     "editor.codeLensFontFamily": "JetBrains Mono, monospace",
     "editor.minimap.enabled": false,
-
     // Git
     "git.autofetch": true,
     "diffEditor.ignoreTrimWhitespace": true,
@@ -26,5 +25,15 @@
     "files.trimTrailingWhitespace": true,
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"
-    }
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/__pycache__":true,
+    },
+    "hide-files.files": []
 }

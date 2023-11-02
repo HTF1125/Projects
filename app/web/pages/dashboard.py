@@ -1,9 +1,9 @@
 from datetime import date
 
 from dash import html, dcc, callback, Output, Input, State
-from app import database
+from app import db
 import plotly.express as px
-from app.database.models import TbMarketReport
+from app.db.models import TbMarketReport
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 
@@ -81,7 +81,7 @@ class CapitalMarkets(Page):
     Input("my-date-picker-range", "end_date"),
 )
 def update_output(start_date, end_date):
-    yields = database.get_yields()
+    yields = db.get_yields()
     if start_date is not None:
         yields = yields.loc[start_date:]
     if end_date is not None:
