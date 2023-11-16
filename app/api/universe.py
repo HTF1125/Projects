@@ -5,8 +5,6 @@ from .. import core
 from .. import db
 
 
-
-
 class Universe:
     UNIVERSE = {
         "UsSectors": [
@@ -39,10 +37,12 @@ class Universe:
 
     def __init__(self, assets: List[str]) -> None:
         self.assets = sorted(assets)
+        self.num_assets = len(self.assets)
 
     def get_prices(self, date: Optional[pd.Timestamp] = None) -> pd.DataFrame:
         # get prices
         data = db.get_prices(tickers=", ".join(self.assets))
+        data = data.reindex(columns=self.assets)
         if date is not None:
             data = data.loc[:date].dropna(how="all", axis=1)
         return data
@@ -50,24 +50,23 @@ class Universe:
     def get_volumes(self, date: Optional[pd.Timestamp] = None) -> pd.DataFrame:
         # get volumes
         data = db.get_volumes(tickers=", ".join(self.assets))
+        data = data.reindex(columns=self.assets)
         if date is not None:
             data = data.loc[:date].dropna(how="all", axis=1)
         return data
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def cov(
+        self, method: str = "sample", date: Optional[pd.Timestamp] = None
+    ) -> pd.DataFrame:
+        prices = self.get_prices(date=date)
+        S = np.zeros((self.num_assets, self.num_assets))
+        for i in range(self.num_assets):
+            for j in range(i, self.num_assets):
+                S[i, j] = S[j, i] = core.empirical_cov(
+                    prices.iloc[:, i], prices.iloc[:, j]
+                )
+        data = pd.DataFrame(data=S, columns=self.assets, index=self.assets)
+        return data
 
     def expectation(
         self,

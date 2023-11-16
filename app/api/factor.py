@@ -56,7 +56,7 @@ class PxMom1M(Factor):
     periods = 1 * 21
 
     def fit(self) -> pd.DataFrame:
-        return core.pri_return(data=self.universe.get_prices(), periods=self.periods)
+        return core.pri_return(close=self.universe.get_prices(), periods=self.periods)
 
 
 class PxMom2M(PxMom1M):
@@ -238,15 +238,10 @@ class PxRsi50(Factor):
 
     def fit(self) -> pd.DataFrame:
         prices = self.universe.get_prices()
-        rsi = core.RSI(prices, self.periods).clip(lower=0.2, upper=0.8)
+        rsi = prices.rolling(self.periods).apply(
+            core.RSI, kwargs={"periods": self.periods}
+        )
         return rsi
-
-
-class PxBBand50(Factor):
-    periods: int = 50
-
-    def fit(self) -> pd.DataFrame:
-        return core.BBand(self.universe.get_prices(), self.periods)
 
 
 class MultiFactors:
@@ -278,7 +273,7 @@ class MultiFactors:
         "UsLei10Y": UsLei10Y,
         "VolState5Y": VolState5Y,
         # "Absorption1Y": Absorption1Y,
-        "PxBBand50" : PxBBand50,
+        # "PxBBand50": PxBBand50,
     }
 
     def __init__(self, universe: Universe) -> None:

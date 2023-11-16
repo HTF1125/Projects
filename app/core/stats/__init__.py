@@ -1,3 +1,5 @@
+from .norm import *
+from .scaler import *
 import numpy as np
 import pandas as pd
 
@@ -23,3 +25,8 @@ def ENTP(data: pd.Series, window: int = 10, base=2.0) -> pd.Series:
     p = data / data.rolling(window=window).sum()
     entropy = (-p * np.log(p) / np.log(base)).rolling(window=window).sum()
     return entropy
+
+
+def CV(data: pd.Series, window: int = 10) -> pd.Series:
+    roll = data.rolling(window=window)
+    return roll.std() / roll.mean()

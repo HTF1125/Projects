@@ -16,7 +16,7 @@ class Regime:
         self, prices: pd.DataFrame, periods: int = 21
     ) -> pd.DataFrame:
         forward_return = core.log_return(
-            data=prices,
+            close=prices,
             periods=periods,
             forward=True,
         ).multiply(252 / periods)
@@ -83,7 +83,7 @@ class AbsorptionRatio(Regime):
         log_return = core.log_return(pxs).dropna()
         result = {}
         for i in log_return.resample("M").last().iloc[12:].index:
-            exp_ratio = core.get_explained_variance_ratio(
+            exp_ratio = core.get_absorption_ratio(
                 log_return.loc[:i].iloc[-252:]
             )
             result[i] = exp_ratio

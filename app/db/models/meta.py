@@ -1,10 +1,11 @@
 """ROBERT"""
-from typing import Dict
+from typing import Dict, List
 import pandas as pd
-from sqlalchemy import Column, Integer, VARCHAR, Text, Float, Date
+from sqlalchemy import Column, Integer, VARCHAR, Text, Float, Date, String
 from sqlalchemy import ForeignKey
-from app.db.common import Session
-from app.db.models import TbBase
+from sqlalchemy import select
+from ..common import Session, Engine
+from .base import TbBase
 
 
 class TbMeta(TbBase):
@@ -70,6 +71,18 @@ class TbMeta(TbBase):
                 con=session.connection(),
                 parse_dates=["Date"],
             ).pivot(index="Date", columns="Ticker", values="AdjClose")
+
+    @classmethod
+    def all(cls, **kwargs) -> List[Dict]:
+        return pd.read_sql(sql=select(cls), con=Engine(), **kwargs).to_dict("records")
+
+
+class TbData(TbBase):
+    __tablename__ = "tb_data"
+    meta_id = Column(ForeignKey(f"{TbMeta.__tablename__}.id"), primary_key=True)
+    feature = Column(String(30), primary_key=True)
+    date = Column(Date, primary_key=True)
+    val = Column(Float, nullable=False)
 
 
 class TbPxDaily(TbBase):

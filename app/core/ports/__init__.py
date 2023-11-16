@@ -3,9 +3,9 @@ import numpy as np
 import pandas as pd
 
 
-def ROI(
+def RET(
     asset_wei: Union[np.ndarray, pd.Series],
-    asset_roi: Union[np.ndarray, pd.Series],
+    asset_ret: Union[np.ndarray, pd.Series],
 ) -> float:
     """Calculate the portfolio return.
 
@@ -16,7 +16,7 @@ def ROI(
     Returns:
     float: Portfolio return.
     """
-    return np.dot(asset_wei, asset_roi)
+    return np.dot(asset_wei, asset_ret)
 
 
 def VAR(
@@ -58,7 +58,7 @@ def COR(
     return np.linalg.multi_dot((asset_wei, asset_cor, asset_wei))
 
 
-def MVOL(
+def MarginalVol(
     asset_wei: Union[np.ndarray, pd.Series],
     asset_cov: Union[np.ndarray, pd.DataFrame],
     as_pct: bool = True,
@@ -69,13 +69,13 @@ def MVOL(
     return rc
 
 
-def SHARPE(
+def Sharpe(
     asset_wei: Union[np.ndarray, pd.Series],
     asset_roi: Union[np.ndarray, pd.Series],
     asset_cov: Union[np.ndarray, pd.DataFrame],
     risk_free: float = 0.0,
 ) -> float:
-    ret = ROI(asset_wei, asset_roi)
+    ret = RET(asset_wei, asset_roi)
     vol = VOL(asset_wei, asset_cov)
     return (ret - risk_free) / vol
 
