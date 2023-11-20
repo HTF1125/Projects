@@ -6,7 +6,7 @@ class Config:
     """Database Configuration"""
 
     ENV = "AUTO"
-    LOCAL_URL = "sqlite:///app/database/db.db"
+    LOCAL_URL = "sqlite:///app/db/database.db"
     PGSQL_URL = os.environ.get("POSTGRESQL_URL", None)
 
     @classmethod

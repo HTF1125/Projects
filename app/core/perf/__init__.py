@@ -2,7 +2,6 @@
 from typing import Union
 import numpy as np
 import pandas as pd
-from scipy.stats import spearmanr
 
 
 def pri_return(
@@ -72,6 +71,8 @@ def information_coefficient(
         pd.Series: Series containing information coefficients calculated for each date.
     """
     # Combine the data
+    from scipy.stats import spearmanr
+
     combined_data = pd.concat([forward_returns.stack(), factor_data.stack()], axis=1)
     combined_data = combined_data.dropna().reset_index()
     combined_data.columns = ["Date", "Ticker", "Factor", "Return"]
@@ -87,7 +88,7 @@ def information_coefficient(
 
 def get_absorption_ratio(data: pd.DataFrame, n_components=5, a_components: int = 3):
     from sklearn.decomposition import PCA
-    from ..stats import StandardScaler
+    from ..stat import StandardScaler
 
     normalized_data = data.apply(StandardScaler, axis=1)
     pca = PCA(n_components=n_components)
@@ -95,3 +96,6 @@ def get_absorption_ratio(data: pd.DataFrame, n_components=5, a_components: int =
     explained_variance_ratio = np.sum(pca.explained_variance_ratio_[:a_components])
     return explained_variance_ratio
 
+
+def MDD(px_last: pd.Series) -> pd.Series:
+    return px_last / px_last.expanding().max() - 1

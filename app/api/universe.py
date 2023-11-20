@@ -58,12 +58,12 @@ class Universe:
     def cov(
         self, method: str = "sample", date: Optional[pd.Timestamp] = None
     ) -> pd.DataFrame:
-        prices = self.get_prices(date=date)
+        data = self.get_prices(date=date).apply(core.log_return, periods=1)
         S = np.zeros((self.num_assets, self.num_assets))
         for i in range(self.num_assets):
             for j in range(i, self.num_assets):
                 S[i, j] = S[j, i] = core.empirical_cov(
-                    prices.iloc[:, i], prices.iloc[:, j]
+                    data.iloc[:, i], data.iloc[:, j]
                 )
         data = pd.DataFrame(data=S, columns=self.assets, index=self.assets)
         return data

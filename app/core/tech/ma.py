@@ -9,7 +9,7 @@ def SMA(close: pd.Series, window: int = 5) -> pd.Series:
 
 
 def EMA(close: pd.Series, window: int = 10) -> pd.Series:
-    data = close.ewm.(span=window).mean()
+    data = close.ewm(span=window).mean()
     data.name = f"EMA_{window}"
     return data
 

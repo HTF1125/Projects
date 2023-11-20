@@ -32,6 +32,7 @@ def cli(task: str) -> None:
         logger.info("Launching Web...")
         app.web.main.app.run(debug=True)
     elif task == "report":
+        logger.info("[CLI]")
         from app.tasks.MarketDaily import get_report
         report = get_report()
         print(report)

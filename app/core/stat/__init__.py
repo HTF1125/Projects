@@ -1,5 +1,7 @@
 from .norm import *
 from .scaler import *
+from .cov import *
+
 import numpy as np
 import pandas as pd
 

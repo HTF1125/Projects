@@ -41,19 +41,22 @@ class GlobalMarketChat:
         return response["choices"][0]["message"].content
 
     def watch_youtube(self, link: str) -> None:
-        subtitles = Transcript.get(link)
-        transcript = ""
-        for subtitle in subtitles["segments"]:
-            transcript += subtitle["text"] + " "
-        return self.chat(
-            f"""
-!!! DO NOT GENERATE REPORT YET !!!
-This is a disscussion trascripts by market analysts. Study and understand the content.
-Transcript: {transcript}
-Do not generate daily market briefing report until I tell you to.
-Just reply `Complete` when you are done.
-            """
-        )
+        try:
+            subtitles = Transcript.get(link)
+            transcript = ""
+            for subtitle in subtitles["segments"]:
+                transcript += subtitle["text"] + " "
+            return self.chat(
+                f"""
+    !!! DO NOT GENERATE REPORT YET !!!
+    This is a disscussion trascripts by market analysts. Study and understand the content.
+    Transcript: {transcript}
+    Do not generate daily market briefing report until I tell you to.
+    Just reply `Complete` when you are done.
+                """
+            )
+        except:
+            return None
 
     def generate(self):
         self.report = self.chat(

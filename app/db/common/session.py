@@ -3,17 +3,22 @@
 from contextlib import contextmanager
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import scoped_session
-from .engine import Engine
+from .engine import local_engine, pgsql_engine
+from .config import Config
 
-SessionFactor = sessionmaker(bind=Engine())
-ScopedSession = scoped_session(SessionFactor)
+LocalSession = scoped_session(sessionmaker(bind=local_engine))
+PgsqlSession = scoped_session(sessionmaker(bind=pgsql_engine))
+
 
 @contextmanager
 def Session():
     """
     Provide a transactional scope around a series of operations.
     """
-    session = ScopedSession()
+    if Config.ENV == "LOCAL":
+        session = LocalSession()
+    else:
+        session = PgsqlSession()
     try:
         yield session
         session.commit()

@@ -1,11 +1,25 @@
 from typing import Type, Dict
 import numpy as np
 import pandas as pd
+from app import db
 from .universe import Universe
 from .regime import UsLei, VolState, AbsorptionRatio
 
 
 from .. import core
+
+
+class FactorNotFoundError(Exception):
+    def __init__(self, factor: str):
+        super().__init__(f"Factor '{factor}' not found.")
+
+
+class Factors:
+    def __init__(self, universe: Universe, factor: str) -> None:
+        self.universe = universe
+        if db.TbMeta.has(ticker=factor):
+            self.factor = factor
+        raise FactorNotFoundError(factor=factor)
 
 
 class Factor:
