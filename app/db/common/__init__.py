@@ -1,13 +1,12 @@
 """ROBERT"""
 from .engine import Engine
 from .config import Config
-from .session import Session
-
+from .session import dbSession
 
 __all__ = (
     "Engine",
     "Config",
-    "Session",
+    "dbSession",
 )
 
 

@@ -2,7 +2,7 @@
 from sqlalchemy import Column, VARCHAR, Text, Integer, JSON
 from sqlalchemy import func
 from app.db.models import TbBase
-from app.db.common import Session
+from app.db.common import dbSession
 
 
 class TbGlossary(TbBase):
@@ -27,7 +27,7 @@ class TbMarketReport(TbBase):
 
     @classmethod
     def latest(cls):
-        with Session() as session:
+        with dbSession() as session:
             max_id = session.query(func.max(cls.id)).scalar()
             latest_report = session.query(cls).filter(cls.id == max_id).first()
             return latest_report.report

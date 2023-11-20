@@ -41,7 +41,7 @@ class Universe:
 
     def get_prices(self, date: Optional[pd.Timestamp] = None) -> pd.DataFrame:
         # get prices
-        data = db.get_prices(tickers=", ".join(self.assets))
+        data = db.get_data(tickers=", ".join(self.assets), features="TR_INDEX")
         data = data.reindex(columns=self.assets)
         if date is not None:
             data = data.loc[:date].dropna(how="all", axis=1)
@@ -49,7 +49,7 @@ class Universe:
 
     def get_volumes(self, date: Optional[pd.Timestamp] = None) -> pd.DataFrame:
         # get volumes
-        data = db.get_volumes(tickers=", ".join(self.assets))
+        data = db.get_data(tickers=", ".join(self.assets), features="PX_VOLUME")
         data = data.reindex(columns=self.assets)
         if date is not None:
             data = data.loc[:date].dropna(how="all", axis=1)
@@ -58,11 +58,11 @@ class Universe:
     def cov(
         self, method: str = "sample", date: Optional[pd.Timestamp] = None
     ) -> pd.DataFrame:
-        data = self.get_prices(date=date).apply(core.log_return, periods=1)
+        data = self.get_prices(date=date).apply(core.perf.log_return, periods=1)
         S = np.zeros((self.num_assets, self.num_assets))
         for i in range(self.num_assets):
             for j in range(i, self.num_assets):
-                S[i, j] = S[j, i] = core.empirical_cov(
+                S[i, j] = S[j, i] = core.stat.empirical_cov(
                     data.iloc[:, i], data.iloc[:, j]
                 )
         data = pd.DataFrame(data=S, columns=self.assets, index=self.assets)
@@ -72,21 +72,21 @@ class Universe:
         self,
         date: Optional[pd.Timestamp] = None,
     ) -> pd.Series:
-        return core.log_return(self.get_prices(date=date)).mean() * 252
+        return self.get_prices(date=date).apply(core.perf.log_return).mean() * 252
 
     def covariance(
         self,
         window: int = 252 * 3,
         date: Optional[pd.Timestamp] = None,
     ) -> pd.DataFrame:
-        return core.log_return(self.get_prices(date=date).iloc[-window:]).cov() * 252
+        return self.get_prices(date=date).apply(core.perf.log_return).iloc[-window:].cov() * 252
 
     def correlation(
         self,
         window: int = 252 * 3,
         date: Optional[pd.Timestamp] = None,
     ) -> pd.DataFrame:
-        return core.log_return(self.get_prices(date=date).iloc[-window:]).corr()
+        return self.get_prices(date=date).apply(core.perf.log_return).iloc[-window:].corr()
 
     def solve(
         self,

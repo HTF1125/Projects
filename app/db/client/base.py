@@ -1,79 +1,44 @@
-"""ROBERT"""
-from typing import List
-from typing import Dict
-from functools import lru_cache
+from typing import Optional, Union, List
+from sqlalchemy.orm import Session
 import pandas as pd
-from app.db.common import Engine
-from app.db.common import Session
-from app.db.models import TbMeta
-from app.db.models import TbGlossary
+from ..common import dbSession
+from ..models import TbMeta, TbData
 
-from .. import models
+def get_data(
+    tickers: Union[str, List[str]], features: Union[str, List[str]] = "PX_LAST"
+) -> pd.DataFrame:
+    tickers = (
+        tickers
+        if isinstance(tickers, (list, set, tuple))
+        else tickers.replace(",", " ").split()
+    )
+    features = (
+        tickers
+        if isinstance(features, (list, set, tuple))
+        else features.replace(",", " ").split()
+    )
+    columns = [
+        TbData.date.label("Date"),
+        TbData.data.label("Data"),
+        TbMeta.ticker.label("Ticker"),
+    ]
 
+    if len(features) > 1:
+        columns.insert(2, TbData.feat.label("Feature"))
 
-# @lru_cache()
-# def get_close(code: str) -> Dict:
-#     with Session() as session:
-#         query = (
-#             session.query(
-#                 models.TbPxDaily.date,
-#                 models.TbPxDaily.px_close,
-#             )
-#             .join(models.TbMeta, models.TbMeta.id == models.TbPxDaily.meta_id)
-#             .filter(models.TbMeta.code == code)
-#         )
-#         return {record[0]: record[1] for record in query.all()}
-# @lru_cache()
-# def get_adj_close(code: str) -> Dict:
-#     with Session() as session:
-#         query = (
-#             session.query(
-#                 models.TbPxDaily.date,
-#                 models.TbPxDaily.px_adj_close,
-#             )
-#             .join(models.TbMeta, models.TbMeta.id == models.TbPxDaily.meta_id)
-#             .filter(models.TbMeta.code == code)
-#         )
-#         return {record[0]: record[1] for record in query.all()}
-
-# @lru_cache()
-# def get_prices(tickers: str) -> pd.DataFrame:
-#     """query prices form database"""
-#     with Session() as session:
-#         query = session.query(
-#             TbMeta.code.label("Ticker"),
-#             TbPxDaily.date.label("Date"),
-#             TbPxDaily.px_adj_close.label("AdjClose"),
-#         ).join(TbPxDaily, TbMeta.id == TbPxDaily.meta_id)
-#         if tickers:
-#             query = query.filter(TbMeta.code.in_(tickers.replace(",", " ").split()))
-#         return pd.read_sql(
-#             sql=query.statement, con=session.connection(), parse_dates=["Date"]
-#         ).pivot(index="Date", columns="Ticker", values="AdjClose")
-
-
-# @lru_cache()
-# def get_volumes(tickers: str) -> pd.DataFrame:
-#     """query prices form database"""
-#     with Session() as session:
-#         query = session.query(
-#             TbMeta.code.label("Ticker"),
-#             TbPxDaily.date.label("Date"),
-#             TbPxDaily.px_volume.label("Volume"),
-#         ).join(TbPxDaily, TbMeta.id == TbPxDaily.meta_id)
-#         if tickers:
-#             query = query.filter(TbMeta.code.in_(tickers.replace(",", " ").split()))
-
-#         return pd.read_sql(
-#             sql=query.statement, con=session.connection(), parse_dates=["Date"]
-#         ).pivot(index="Date", columns="Ticker", values="Volume")
-
-
-# def get_glossaries() -> List[Dict]:
-#     """this is a pass through function"""
-#     return TbGlossary.get()
-
-
-# def read_sql(sql: str, **kwargs) -> pd.DataFrame:
-#     """this is a pass through function"""
-#     return pd.read_sql(sql=sql, con=Engine(), **kwargs)
+    with dbSession() as session:
+        query = session.query(*columns).join(
+            TbMeta, TbMeta.id == TbData.meta_id
+        )
+        query = query.filter(TbMeta.ticker.in_(tickers))
+        query = query.filter(TbData.feat.in_(features))
+        data = pd.read_sql(
+            sql=query.statement,
+            con=session.connection(),
+            parse_dates=["Date"],
+        )
+    index = ["Date"]
+    columns = list(set(data.columns) - set(index) - set(["Data"]))
+    data = pd.pivot(data=data, index=index, columns=columns, values="Data")
+    data = data.sort_index(axis=1)
+    return data

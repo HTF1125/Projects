@@ -3,7 +3,7 @@ from typing import Dict
 import pandas as pd
 from sqlalchemy import Column, Integer, VARCHAR, Text, Float, Date, String
 from sqlalchemy import ForeignKey
-from ..common import Session, Engine
+from ..common import dbSession, Engine
 from .base import TbBase
 
 

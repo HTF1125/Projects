@@ -11,7 +11,7 @@ PgsqlSession = scoped_session(sessionmaker(bind=pgsql_engine))
 
 
 @contextmanager
-def Session():
+def dbSession():
     """
     Provide a transactional scope around a series of operations.
     """

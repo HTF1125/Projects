@@ -1,6 +1,5 @@
 """ROBERT"""
-
-from . import perf
-from . import port
-from . import stat
-from . import tech
+from .perf import *
+from .port import *
+from .stat import *
+from .tech import *

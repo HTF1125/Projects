@@ -1,9 +1,16 @@
 from .universe import Universe
 
+import pandas as pd
 
-class Portfolio:
+
+class Portflio:
     def __init__(
         self,
-        universe: Universe,
+        assets: pd.Index,
+        expected_returns: pd.Series,
+        covariance_matrix: pd.DataFrame,
     ) -> None:
-        self.universe = universe
+        self.assets = assets
+        self.expected_returns = expected_returns
+        self.covariance_matrix = covariance_matrix
+

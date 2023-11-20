@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 
-def RET(
+def ExpectedReturn(
     asset_wei: Union[np.ndarray, pd.Series],
     asset_ret: Union[np.ndarray, pd.Series],
 ) -> float:
@@ -19,7 +19,7 @@ def RET(
     return np.dot(asset_wei, asset_ret)
 
 
-def VAR(
+def ExpectedVar(
     asset_wei: Union[np.ndarray, pd.Series],
     asset_cov: Union[np.ndarray, pd.DataFrame],
 ) -> float:
@@ -35,14 +35,14 @@ def VAR(
     return np.linalg.multi_dot((asset_wei, asset_cov, asset_wei))
 
 
-def VOL(
+def ExpectedVol(
     asset_wei: Union[np.ndarray, pd.Series],
     asset_cov: Union[np.ndarray, pd.DataFrame],
 ) -> float:
-    return VAR(asset_wei=asset_wei, asset_cov=asset_cov) ** 0.5
+    return ExpectedVar(asset_wei=asset_wei, asset_cov=asset_cov) ** 0.5
 
 
-def COR(
+def ExpectedCor(
     asset_wei: Union[np.ndarray, pd.Series],
     asset_cor: Union[np.ndarray, pd.DataFrame],
 ) -> float:
@@ -58,25 +58,25 @@ def COR(
     return np.linalg.multi_dot((asset_wei, asset_cor, asset_wei))
 
 
-def MarginalVol(
+def ExpectedMarginalVol(
     asset_wei: Union[np.ndarray, pd.Series],
     asset_cov: Union[np.ndarray, pd.DataFrame],
     as_pct: bool = True,
 ) -> np.ndarray:
     rc = np.dot(asset_cov, asset_wei) * asset_wei
     if as_pct:
-        return rc / VOL(asset_wei, asset_cov)
+        return rc / ExpectedVol(asset_wei, asset_cov)
     return rc
 
 
-def Sharpe(
+def ExpectedSharpe(
     asset_wei: Union[np.ndarray, pd.Series],
     asset_roi: Union[np.ndarray, pd.Series],
     asset_cov: Union[np.ndarray, pd.DataFrame],
     risk_free: float = 0.0,
 ) -> float:
-    ret = RET(asset_wei, asset_roi)
-    vol = VOL(asset_wei, asset_cov)
+    ret = ExpectedReturn(asset_wei, asset_roi)
+    vol = ExpectedVol(asset_wei, asset_cov)
     return (ret - risk_free) / vol
 
 
@@ -96,4 +96,4 @@ def ExAnteTE(
     float: Ex-ante tracking error.
     """
     active_wei = np.subtract(asset_wei1, asset_wei2)
-    return VOL(asset_wei=active_wei, asset_cov=asset_cov)
+    return ExpectedVol(asset_wei=active_wei, asset_cov=asset_cov)
