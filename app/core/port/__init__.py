@@ -35,7 +35,7 @@ def ExpectedVar(
     return np.linalg.multi_dot((asset_wei, asset_cov, asset_wei))
 
 
-def ExpectedVol(
+def ExpectedRisk(
     asset_wei: Union[np.ndarray, pd.Series],
     asset_cov: Union[np.ndarray, pd.DataFrame],
 ) -> float:
@@ -65,18 +65,18 @@ def ExpectedMarginalVol(
 ) -> np.ndarray:
     rc = np.dot(asset_cov, asset_wei) * asset_wei
     if as_pct:
-        return rc / ExpectedVol(asset_wei, asset_cov)
+        return rc / ExpectedRisk(asset_wei, asset_cov)
     return rc
 
 
 def ExpectedSharpe(
     asset_wei: Union[np.ndarray, pd.Series],
-    asset_roi: Union[np.ndarray, pd.Series],
+    asset_ret: Union[np.ndarray, pd.Series],
     asset_cov: Union[np.ndarray, pd.DataFrame],
     risk_free: float = 0.0,
 ) -> float:
-    ret = ExpectedReturn(asset_wei, asset_roi)
-    vol = ExpectedVol(asset_wei, asset_cov)
+    ret = ExpectedReturn(asset_wei, asset_ret)
+    vol = ExpectedRisk(asset_wei, asset_cov)
     return (ret - risk_free) / vol
 
 
@@ -96,4 +96,4 @@ def ExAnteTE(
     float: Ex-ante tracking error.
     """
     active_wei = np.subtract(asset_wei1, asset_wei2)
-    return ExpectedVol(asset_wei=active_wei, asset_cov=asset_cov)
+    return ExpectedRisk(asset_wei=active_wei, asset_cov=asset_cov)

@@ -99,3 +99,13 @@ def get_absorption_ratio(data: pd.DataFrame, n_components=5, a_components: int =
 
 def MDD(px_last: pd.Series) -> pd.Series:
     return px_last / px_last.expanding().max() - 1
+
+
+def VaR(px_last: pd.Series, alpha: float = 0.05) -> float:
+    return np.percentile(pri_return(px_last), 100 * alpha)
+
+
+def CVaR(px_last: pd.Series, alpha: float = 0.05) -> float:
+    returns = pri_return(px_last)
+    cutoff_index = int((len(returns) - 1) * alpha)
+    return np.mean(np.partition(returns, cutoff_index)[:cutoff_index + 1])

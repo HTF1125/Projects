@@ -1347,15 +1347,15 @@
         "Liq": 4680.057886
     },
     "target_weight": {
-        "ALM_Krbond": 0.1940592166967774,
-        "INT_Krbond": 0.17414768709500061,
-        "INT_Gobond": 0.13958773296205335,
-        "INT_AI": 0.3567801340671068,
-        "INT_Retail": 0.07095837515639758,
-        "ACT_Krbond": 0.012235914230898943,
-        "ACT_Gobond": 0.0025252223961290438,
-        "ACT_Stock": 0.020160249923367592,
-        "Liq": 0.029545467472268865
+        "ALM_Krbond": 0.20,
+        "INT_Krbond": 0.20,
+        "INT_Gobond": 0.20,
+        "INT_AI": 0.10,
+        "INT_Retail": 0.05,
+        "ACT_Krbond": 0.05,
+        "ACT_Gobond": 0.05,
+        "ACT_Stock": 0.05,
+        "Liq": 0.10
     },
     "asset_duration": {
         "ALM_Krbond": 16,
