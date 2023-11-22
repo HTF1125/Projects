@@ -122,12 +122,9 @@ class Opt:
 
         return prob
 
-
-
-
-
 opt = Opt.from_json()
 prob = opt.opt()
-
 print(prob)
 prob.x
+
+

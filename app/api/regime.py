@@ -77,10 +77,10 @@ class AbsorptionRatio(Regime):
     __states__ = ("HighAR", "LowAR")
 
     def fit(self) -> Regime:
-        pxs = db.get_prices(
+        pxs = db.get_data(
             tickers="SPY, IEF, TLT, EZU, VPL, EEM, GLD, RWR, EMB, TIP, USDKRW, ^N225, ^KS11"
         ).dropna()
-        log_return = core.log_return(pxs).dropna()
+        log_return = pxs.apply(core.log_return)
         result = {}
         for i in log_return.resample("M").last().iloc[12:].index:
             exp_ratio = core.get_absorption_ratio(

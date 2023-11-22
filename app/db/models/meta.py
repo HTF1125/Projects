@@ -3,7 +3,7 @@ from typing import Dict
 import pandas as pd
 from sqlalchemy import Column, Integer, VARCHAR, Text, Float, Date, String
 from sqlalchemy import ForeignKey
-from ..common import dbSession, Engine
+from ..common import Session, Engine
 from .base import TbBase
 
 
@@ -26,6 +26,6 @@ class TbData(TbBase):
         ForeignKey(f"{TbMeta.__tablename__}.id"),
         primary_key=True,
     )
-    feat = Column(String(30), primary_key=True)
+    factor = Column(String(30), primary_key=True)
     date = Column(Date, primary_key=True)
     data = Column(Float, nullable=False)

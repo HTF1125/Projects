@@ -1,8 +1,15 @@
-from typing import Optional, List
+from typing import Optional, List, Callable
 import numpy as np
 import pandas as pd
 from .. import core
 from .. import db
+from .portfolio import Portfolio
+
+
+class Payload(dict):
+    def __missing__(self, key):
+        self[key] = Payload()
+        return self[key]
 
 
 class Universe:
@@ -32,28 +39,42 @@ class Universe:
     }
 
     @classmethod
-    def from_code(cls, code: str) -> "Universe":
+    def from_code(
+        cls,
+        code: str,
+    ) -> "Universe":
         return cls(cls.UNIVERSE[code])
 
-    def __init__(self, assets: List[str]) -> None:
+    def __init__(
+        self,
+        assets: List[str],
+    ) -> None:
+        self.payload = Payload()
+
         self.assets = sorted(assets)
         self.num_assets = len(self.assets)
 
-    def get_prices(self, date: Optional[pd.Timestamp] = None) -> pd.DataFrame:
-        # get prices
-        data = db.get_data(tickers=", ".join(self.assets), features="TR_INDEX")
-        data = data.reindex(columns=self.assets)
-        if date is not None:
-            data = data.loc[:date].dropna(how="all", axis=1)
+    def get_prices(
+        self,
+        date: Optional[pd.Timestamp] = None,
+    ) -> pd.DataFrame:
+        data = db.get_data(tickers=", ".join(self.assets), factors="TR_LAST")
         return data
 
-    def get_volumes(self, date: Optional[pd.Timestamp] = None) -> pd.DataFrame:
-        # get volumes
-        data = db.get_data(tickers=", ".join(self.assets), features="PX_VOLUME")
-        data = data.reindex(columns=self.assets)
-        if date is not None:
-            data = data.loc[:date].dropna(how="all", axis=1)
+    def get_volumes(
+        self,
+        date: Optional[pd.Timestamp] = None,
+    ) -> pd.DataFrame:
+        data = db.get_data(tickers=", ".join(self.assets), factors="PX_VOLUME")
         return data
+
+    def get_fwd_return(
+        self,
+        periods: int = 1,
+        date: Optional[pd.Timestamp] = None,
+    ) -> pd.DataFrame:
+        prices = self.get_prices()
+        return prices.apply(core.pri_return, periods=periods, forward=True)
 
     def cov(
         self, method: str = "sample", date: Optional[pd.Timestamp] = None
@@ -79,14 +100,19 @@ class Universe:
         window: int = 252 * 3,
         date: Optional[pd.Timestamp] = None,
     ) -> pd.DataFrame:
-        return self.get_prices(date=date).apply(core.perf.log_return).iloc[-window:].cov() * 252
+        return (
+            self.get_prices(date=date).apply(core.perf.log_return).iloc[-window:].cov()
+            * 252
+        )
 
     def correlation(
         self,
         window: int = 252 * 3,
         date: Optional[pd.Timestamp] = None,
     ) -> pd.DataFrame:
-        return self.get_prices(date=date).apply(core.perf.log_return).iloc[-window:].corr()
+        return (
+            self.get_prices(date=date).apply(core.perf.log_return).iloc[-window:].corr()
+        )
 
     def solve(
         self,
@@ -116,3 +142,29 @@ class Universe:
             w = pd.Series(data=data, index=self.assets, name="weights")
             return w.round(6)
         return pd.Series({})
+
+    def add_factor(
+        self,
+        factor: Callable[..., pd.DataFrame],
+        quantiles: int = 5,
+        commission: int = 10,
+        zero_aware: bool = False,
+        demean: bool = True,
+    ) -> "Universe":
+        """add factor"""
+        data = factor(self).dropna(thresh=quantiles, axis=1)
+        group = data.apply(
+            core.to_quantile,
+            axis=1,
+            quantiles=quantiles,
+            zero_aware=zero_aware,
+        )
+        weights = group.apply(core.sum_to_one, axis=1).dropna(how="all")
+        turnover = weights.diff().abs().sum(axis=1)
+        fwd_return = self.get_fwd_return(periods=1)
+        if demean: fwd_return = fwd_return.apply(core.demeaned, axis=1)
+        fac_return = fwd_return.multiply(weights).dropna(how="all").sum(axis=1)
+        fac_return = fac_return - turnover * commission / 10_000
+        alpha = fac_return.add(1).cumprod()
+        alpha.plot()
+        return self

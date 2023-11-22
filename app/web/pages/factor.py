@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from app import core
 from app.web import components
-from app.api import Universe, MultiFactors
+from app.api import Universe
 from .. import components
 
 logger = logging.getLogger(__name__)

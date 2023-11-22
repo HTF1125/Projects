@@ -21,8 +21,8 @@ def get_yahoo_data(ticker: str) -> pd.DataFrame:
 
     data = yf.download(tickers=ticker, actions=True, progress=False).dropna()
     data = data.stack().reset_index()
-    data.columns = ["date", "feat", "data"]
-    data["feat"] = data["feat"].map(rename)
+    data.columns = ["date", "factor", "data"]
+    data["factor"] = data["factor"].map(rename)
     data = data[data["data"] != 0]
     return data
 
@@ -36,5 +36,5 @@ def get_fred_data(ticker: str) -> pd.DataFrame:
     ).dropna()
     data = data.reset_index()
     data.columns = ["date", "data"]
-    data["feat"] = "PX_LAST"
+    data["factor"] = "PX_LAST"
     return data

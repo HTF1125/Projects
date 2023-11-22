@@ -8,24 +8,6 @@ import pandas as pd
 from .. import core
 
 
-def cov_to_corr(cov: pd.DataFrame) -> pd.DataFrame:
-    """
-    Convert a covariance matrix to a correlation matrix.
-
-    Parameters:
-    - cov (numpy.ndarray): Covariance matrix.
-
-    Returns:
-    - numpy.ndarray: Correlation matrix.
-    """
-    # Extract standard deviations from the diagonal of the covariance matrix
-    std = np.sqrt(np.diag(cov))
-    # Compute the outer product of standard deviations to get the variance matrix
-    var = np.outer(std, std)
-    # Divide the covariance matrix by the variance matrix element-wise
-    cor = cov.divide(var)
-    return cor
-
 
 class Portfolio:
     def __init__(
@@ -74,7 +56,7 @@ class Portfolio:
     def cor(self) -> pd.DataFrame:
         if self.asset_cor is None:
             warnings.warn("Cor not availabel. Trying to convert from Cov.")
-            return cov_to_corr(self.cov)
+            return core.cov_to_cor(self.cov)
         return self.asset_cor
 
     @property

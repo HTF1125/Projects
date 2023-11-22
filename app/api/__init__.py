@@ -1,5 +1,5 @@
 from .universe import Universe
-from .factor import MultiFactors
+from .factor import *
 from .regime import Regime
 from .portfolio import *
 

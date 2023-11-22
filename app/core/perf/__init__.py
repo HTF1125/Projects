@@ -5,55 +5,56 @@ import pandas as pd
 
 
 def pri_return(
-    close: pd.Series,
+    px_last: pd.Series,
     periods: int = 1,
     forward: bool = False,
+    demeaned: bool = False,
 ) -> pd.Series:
-    out = close / close.shift(1) - 1
+    out = px_last / px_last.shift(1) - 1
     if forward:
-        return out.shift(periods=-periods).loc[:-periods]
+        return out.shift(periods=-periods).iloc[:-periods]
     return out.iloc[periods:]
 
 
 def log_return(
-    close: pd.Series,
+    px_last: pd.Series,
     periods: int = 1,
     forward: bool = False,
 ) -> pd.Series:
-    return pri_return(close=close, periods=periods, forward=forward).apply(np.log1p)
+    return pri_return(px_last=px_last, periods=periods, forward=forward).apply(np.log1p)
 
 
 def cum_return(
-    close: pd.Series,
+    px_last: pd.Series,
 ) -> pd.Series:
-    close = close.dropna()  # Remove NaN values
-    return close.iloc[-1] / close.iloc[0] - 1
+    px_last = px_last.dropna()  # Remove NaN values
+    return px_last.iloc[-1] / px_last.iloc[0] - 1
 
 
 def ann_return(
-    close: pd.Series,
+    px_last: pd.Series,
     ann_factor: Union[int, float] = 252.0,
 ) -> float:
-    base_return = np.exp(log_return(close).mean()) - 1
+    base_return = np.exp(log_return(px_last).mean()) - 1
     return base_return * ann_factor
 
 
 def ann_volatility(
-    close: pd.Series,
+    px_last: pd.Series,
     ann_factor: Union[int, float] = 252.0,
 ) -> float:
-    base_return = log_return(close).std()
+    base_return = log_return(px_last).std()
     return base_return * ann_factor**0.5
 
 
 def ann_sharpe(
-    close: pd.Series,
+    px_last: pd.Series,
     risk_free: float = 0.0,
     ann_factor: Union[int, float] = 252.0,
 ) -> float:
     return (
-        ann_return(close=close, ann_factor=ann_factor) - risk_free
-    ) / ann_volatility(close=close, ann_factor=ann_factor)
+        ann_return(px_last=px_last, ann_factor=ann_factor) - risk_free
+    ) / ann_volatility(px_last=px_last, ann_factor=ann_factor)
 
 
 def information_coefficient(
@@ -102,10 +103,11 @@ def MDD(px_last: pd.Series) -> pd.Series:
 
 
 def VaR(px_last: pd.Series, alpha: float = 0.05) -> float:
-    return np.percentile(pri_return(px_last), 100 * alpha)
+    return np.percentile(pri_return(px_last.dropna()), 100 * alpha)
 
 
 def CVaR(px_last: pd.Series, alpha: float = 0.05) -> float:
-    returns = pri_return(px_last)
+    returns = pri_return(px_last).dropna()
     cutoff_index = int((len(returns) - 1) * alpha)
     return np.mean(np.partition(returns, cutoff_index)[:cutoff_index + 1])
+

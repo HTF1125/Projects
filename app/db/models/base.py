@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy import delete
 from sqlalchemy.orm import declarative_base
 import pandas as pd
-from ..common import dbSession, Engine
+from ..common import Session, Engine
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class TbBase(Base):
         query = select(cls)
         if kwargs:
             query = query.filter_by(**kwargs)
-        with dbSession() as session:
+        with Session() as session:
             return pd.read_sql(sql=query, con=session.connection())
 
     @classmethod
@@ -37,21 +37,22 @@ class TbBase(Base):
         query = delete(cls)
         if kwargs:
             query = query.filter_by(**kwargs)
-        with dbSession() as session:
+        with Session() as session:
             session.execute(query)
             session.commit()
 
     @classmethod
     def insert(cls, records, chunk_size=100000000):
+
         if len(records) < chunk_size:
-            with dbSession() as session:
+            with Session() as session:
                 session.bulk_insert_mappings(cls, records)
                 session.commit()
                 return
 
         from tqdm import tqdm
 
-        with dbSession() as session:
+        with Session() as session:
             # Calculate the number of chunks
             num_records = len(records)
             num_chunks = (num_records // chunk_size) + (
@@ -84,7 +85,7 @@ class TbBase(Base):
 
     @classmethod
     def update(cls, records):
-        with dbSession() as session:
+        with Session() as session:
             try:
                 session.bulk_update_mappings(cls, records)
                 session.commit()
@@ -93,7 +94,7 @@ class TbBase(Base):
 
     @classmethod
     def add(cls, **kwargs):
-        with dbSession() as session:
+        with Session() as session:
             try:
                 session.add(cls(**kwargs))
                 session.commit()
@@ -103,13 +104,13 @@ class TbBase(Base):
     @classmethod
     def has(cls, **kwargs) -> bool:
         stmt = select(cls).filter_by(**kwargs)
-        with dbSession() as session:
+        with Session() as session:
             if session.query(stmt.exists()).scalar():
                 return True
             return False
 
     def save(self) -> bool:
-        with dbSession() as session:
+        with Session() as session:
             session.add(self)
             session.commit()
             return True
