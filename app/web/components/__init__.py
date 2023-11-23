@@ -125,7 +125,7 @@ def get_factor_args():
         style=style,
         children=[
             get_universe(),
-            get_periods(),
+            # get_periods(),
             get_factor(),
         ],
     )

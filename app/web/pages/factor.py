@@ -14,6 +14,8 @@ from app.api import factor
 logger = logging.getLogger(__name__)
 
 from .dashboard import Page
+
+
 class Factor(Page):
     href = "/factor"
     icon = "antd-dot-chart"
@@ -50,6 +52,28 @@ class Factor(Page):
                 ),
                 html.Div(
                     children=[
+                        dcc.Markdown(
+                            children="""
+**Universe:**
+The Universe module is specifically curated with major ETFs, simplifying your focus on essential assets.
+
+- **GlobalAllo:**
+  - SPY, AGG, TLT, TIP, GSG, GLD, TIP, IVV
+
+- **UsSectors:**
+  - XLC, XLY, XLK, and YOU KNOW WHATS NEXT.
+
+**Factors:**
+Given the constraints of data availability, our Factors predominantly encompass momentum, ensuring an intuitive and actionable analysis.
+
+**Running the Module:**
+Upon hitting 'run', the generated graph provides insights into the average expected forward performance on a daily basis. This projection extends over three distinct investment horizons: 1, 5, and 10 trading days.
+
+**Additional Information:**
+The notation `(q=5, za=0)` signifies the use of quantiles (in this case, 5) and a non-zero-aware approach when processing factor data.
+
+                                """
+                        ),
                         dmc.LoadingOverlay(
                             children=[
                                 html.H3(
@@ -82,16 +106,15 @@ import dash_ag_grid as dag
     Output("factor-chart-title", "children"),
     Input("user-factor-test", "n_clicks"),
     State("user-universe", "value"),
-    State("user-periods", "value"),
+    # State("user-periods", "value"),
     State("user-factor", "value"),
 )
 def compute_factor_data(
     n_clicks: int,
     universe: str,
-    periods: int,
+    # periods: int,
     factor: str,
 ):
-
     uni = Universe.from_code(universe)
     uni.f.append(factor, periods=[1, 5, 10])
     # performances = factor_test(
@@ -130,7 +153,7 @@ def compute_factor_data(
     #     i_factor = i_performances[f]
     #     fig.add_trace(trace=go.Scatter(x=i_factor.index, y=i_factor.values, name=f))
     fig = uni.f.plot()
-    # fig.update_layout(
+    fig.update_layout(
         # plot_bgcolor='rgba(0,0,0,0)',  # Set plot background color as transparent
         # paper_bgcolor='rgba(0,0,0,0)',  # Set paper background color as transparent
         # showlegend=False,  # Hide the legend for a cleaner border look
@@ -141,16 +164,16 @@ def compute_factor_data(
         # paper_bordercolor='black',  # Set the border color
         # paper_borderwidth=1  # Set the border width
         # hovermode="x unified",
-    #     legend={
-    #         "orientation": "h",
-    #         "xanchor": "center",
-    #         "x": 0.5,
-    #         "y": -0.05,
-    #         "yanchor": "top",
-    #         "itemsizing": "constant",
-    #     },
-    #     margin={"t": 0, "l": 0, "r": 0, "b": 0},
-    # )
+        legend={
+            "orientation": "h",
+            "xanchor": "center",
+            "x": 0.5,
+            "y": -0.05,
+            "yanchor": "top",
+            "itemsizing": "constant",
+        },
+        margin={"t": 0, "l": 0, "r": 0, "b": 0},
+    )
     return (
         fig,
         f"Factor Performances",

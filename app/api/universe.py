@@ -225,7 +225,7 @@ class Factors:
             if performance.empty:
                 continue
             for p in performance:
-                perf = performance[p]
+                perf = performance[p].dropna()
                 indices = np.linspace(0, len(perf.index) - 1, 50, dtype=int)
                 perf = perf.iloc[indices].round(2)
 
