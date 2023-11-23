@@ -2,14 +2,14 @@ import logging
 from dash import html, dcc, callback, Output, Input, State
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
-
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from app import core
-from app.web import components
 from app.api import Universe
 from .. import components
+from app.api import factor
+
 
 logger = logging.getLogger(__name__)
 
@@ -79,55 +79,58 @@ import dash_ag_grid as dag
 
 @callback(
     Output("factor-performance-chart", "figure"),
-    Output("factor-performance-table", "children"),
     Output("factor-chart-title", "children"),
     Input("user-factor-test", "n_clicks"),
     State("user-universe", "value"),
     State("user-periods", "value"),
-    State("user-commission", "value"),
+    State("user-factor", "value"),
 )
 def compute_factor_data(
     n_clicks: int,
     universe: str,
     periods: int,
-    commission: int,
+    factor: str,
 ):
-    performances = factor_test(
-        universe=universe, periods=periods, commission=commission
-    )
-    mete = pd.concat(
-        [
-            core.cum_return(performances),
-            core.ann_return(performances),
-            core.ann_volatility(performances),
-            core.ann_sharpe(performances),
-        ],
-        axis=1,
-    ).round(3)
-    d = mete.reset_index().sort_values(by="AnnSharpe", ascending=False)
 
-    gg = dag.AgGrid(
-        id="cell-double-clicked-grid",
-        rowData=d.to_dict("records"),
-        columnDefs=[{"field": i} for i in d.columns],
-        defaultColDef={
-            "resizable": False,
-            "sortable": True,
-            "filter": True,
-            "minWidth": 125,
-        },
-        columnSize="sizeToFit",
-        getRowId="params.data.State",
-    )
+    uni = Universe.from_code(universe)
+    uni.f.append(factor, periods=[1, 5, 10])
+    # performances = factor_test(
+    #     universe=universe, periods=periods, commission=commission
+    # )
+    # mete = pd.concat(
+    #     [
+    #         core.cum_return(performances),
+    #         core.ann_return(performances),
+    #         core.ann_volatility(performances),
+    #         core.ann_sharpe(performances),
+    #     ],
+    #     axis=1,
+    # ).round(3)
+    # d = mete.reset_index().sort_values(by="AnnSharpe", ascending=False)
 
-    fig = go.Figure()
-    indices = np.linspace(0, len(performances.index) - 1, 50, dtype=int)
-    i_performances = performances.iloc[indices].round(2)
+    # gg = dag.AgGrid(
+    #     id="cell-double-clicked-grid",
+    #     rowData=d.to_dict("records"),
+    #     columnDefs=[{"field": i} for i in d.columns],
+    #     defaultColDef={
+    #         "resizable": False,
+    #         "sortable": True,
+    #         "filter": True,
+    #         "minWidth": 125,
+    #     },
+    #     columnSize="sizeToFit",
+    #     getRowId="params.data.State",
+    # )
 
-    for f in i_performances:
-        i_factor = i_performances[f]
-        fig.add_trace(trace=go.Scatter(x=i_factor.index, y=i_factor.values, name=f))
-    fig.update_layout(
+    # fig = go.Figure()
+    # indices = np.linspace(0, len(performances.index) - 1, 50, dtype=int)
+    # i_performances = performances.iloc[indices].round(2)
+
+    # for f in i_performances:
+    #     i_factor = i_performances[f]
+    #     fig.add_trace(trace=go.Scatter(x=i_factor.index, y=i_factor.values, name=f))
+    fig = uni.f.plot()
+    # fig.update_layout(
         # plot_bgcolor='rgba(0,0,0,0)',  # Set plot background color as transparent
         # paper_bgcolor='rgba(0,0,0,0)',  # Set paper background color as transparent
         # showlegend=False,  # Hide the legend for a cleaner border look
@@ -138,21 +141,19 @@ def compute_factor_data(
         # paper_bordercolor='black',  # Set the border color
         # paper_borderwidth=1  # Set the border width
         # hovermode="x unified",
-        legend={
-            "orientation": "h",
-            "xanchor": "center",
-            "x": 0.5,
-            "y": -0.05,
-            "yanchor": "top",
-            "itemsizing": "constant",
-            # "font": {"size": 12},
-        },
-        margin={"t": 0, "l": 0, "r": 0, "b": 0},
-    )
+    #     legend={
+    #         "orientation": "h",
+    #         "xanchor": "center",
+    #         "x": 0.5,
+    #         "y": -0.05,
+    #         "yanchor": "top",
+    #         "itemsizing": "constant",
+    #     },
+    #     margin={"t": 0, "l": 0, "r": 0, "b": 0},
+    # )
     return (
         fig,
-        gg,
-        f"Factor Performances Universe: {universe} Forward {periods} Days (comm:{commission:.0f}bps)",
+        f"Factor Performances",
     )
 
 
@@ -177,11 +178,10 @@ def cache_plt(chart, universe, cache):
 
 from functools import lru_cache
 
-
-@lru_cache()
-def factor_test(universe: str, periods: int = 21, commission=10):
-    multi_factors = MultiFactors(Universe.from_code(code=universe))
-    performances = multi_factors.to_performance(
-        periods=periods, commission=commission
-    ).ffill()
-    return performances
+# @lru_cache()
+# def factor_test(universe: str, periods: int = 21, commission=10):
+#     multi_factors = MultiFactors(Universe.from_code(code=universe))
+#     performances = multi_factors.to_performance(
+#         periods=periods, commission=commission
+#     ).ffill()
+#     return performances

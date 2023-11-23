@@ -1,8 +1,9 @@
-from typing import Optional, List, Callable, Dict, Union, List
+from typing import Optional, List, Callable, Dict, Union, List, Tuple, Set
 import numpy as np
 import pandas as pd
 from .. import core
 from .. import db
+
 
 
 class Universe:
@@ -44,7 +45,7 @@ class Universe:
     ) -> None:
         self.assets = sorted(assets)
         self.num_assets = len(self.assets)
-        self.factors = {}
+        self.f = Factors(self)
 
     def get_prices(
         self,
@@ -135,26 +136,72 @@ class Universe:
             return w.round(6)
         return pd.Series({})
 
-    def add_factor(
+
+class Factors:
+    def __init__(self, universe: Universe) -> None:
+        self.universe = universe
+        self.items = {}
+
+    # def get_information_coefficient(self, periods: int = 1) -> pd.Series:
+    #     if periods in self.ic:
+    #         return self.ic[periods]
+    #     from scipy.stats import spearmanr
+
+    #     fwd = self.get_fwd_return(periods=periods)
+    #     factors = self.factors.reindex(index=fwd.index, columns=fwd.columns)
+    #     ic = {}
+    #     for (idx1, r1), (_, r2) in zip(fwd.iterrows(), factors.iterrows()):
+    #         try:
+    #             ic[idx1] = spearmanr(a=r1, b=r2, nan_policy="omit")[0]
+    #         except ValueError:
+    #             pass
+    #     ic = pd.Series(ic, name=periods).dropna()
+    #     self.ic = pd.concat([self.ic, ic], axis=1)
+    #     self.ic = self.ic.sort_index(axis=1)
+    #     return ic
+
+    def append(
         self,
-        func: Callable[..., pd.DataFrame],
+        func: Union[
+            str,
+            List[str], Tuple[str], Set[str],
+            Callable[..., pd.DataFrame],
+            List[Callable[..., pd.DataFrame]],
+        ],
         periods: Union[int, List[int]] = 1,
         quantiles: int = 5,
         zero_aware: int = 0,
-    ) -> "Universe":
-        """add factor"""
+    ) -> None:
+        if isinstance(func, (list, tuple, set)):
+            for f in func:
+                self.append(
+                    f,
+                    periods=periods,
+                    quantiles=quantiles,
+                    zero_aware=zero_aware,
+                )
+            return
+
+        if isinstance(func, str):
+            from . import factor
+            func = getattr(factor, func)
+            if not isinstance(func, Callable):
+                return
+
         key = f"{func.__name__}(q:{quantiles}; za:{zero_aware})"
-        prices = self.get_prices()
-        if key in self.factors:
-            weights = self.factors[key]["weights"]
-            performance = self.factors[key]["performance"]
+        prices = self.universe.get_prices()
+        if key in self.items:
+            weights = self.items[key]["weights"]
+            performance = self.items[key]["performance"]
         else:
-            factors = func(self).reindex(index=prices.index, columns=prices.columns)
+            factors = func(self.universe).reindex(
+                index=prices.index, columns=prices.columns
+            )
             weights = factors.apply(
                 core.to_quantile, axis=1, quantiles=quantiles, zero_aware=zero_aware
             ).apply(core.sum_to_one, axis=1)
             performance = pd.DataFrame()
-            self.factors.update({key: {"factors": factors, "weights": weights}})
+            self.items.update({key: {"factors": factors, "weights": weights}})
         for p in [periods] if isinstance(periods, int) else periods:
             if p in performance.columns:
                 continue
@@ -164,80 +211,35 @@ class Universe:
             perf = fac_return.add(1).cumprod()
             perf.name = p
             performance = pd.concat([performance, perf], axis=1)
-        self.factors[key].update({"performance": performance.sort_index(axis=1)})
-        return self
+        self.items[key].update({"performance": performance.sort_index(axis=1)})
+
+    def plot(self):
+        import plotly.graph_objects as go
+
+        fig = go.Figure()
+        for key, value in self.items.items():
+            performance = value.get("performance")
+
+            if not isinstance(performance, pd.DataFrame):
+                continue
+            if performance.empty:
+                continue
+            for p in performance:
+                perf = performance[p]
+                indices = np.linspace(0, len(perf.index) - 1, 50, dtype=int)
+                perf = perf.iloc[indices].round(2)
+
+                trace = go.Scatter(
+                    x=perf.index,
+                    y=perf.values,
+                    name=f"{key} {p}",
+                )
+                fig.add_trace(trace=trace)
+        return fig
 
 
+    def signature(self) -> Dict:
+
+        return {}
 
 
-
-
-# class Factor:
-#     def __init__(
-#         self,
-#         func: Callable[..., pd.DataFrame],
-#         universe: Universe,
-#         periods: int = 1,
-#         quantiles: int = 5,
-#         zero_aware: bool = False,
-#     ) -> None:
-#         self.factors = func(universe)
-#         self.periods = periods
-#         self.quantiles = quantiles
-#         self.zero_aware = zero_aware
-
-#     def weights(self) -> pd.DataFrame:
-#         weights = self.factors.apply(
-#             core.to_quantile,
-#             axis=1,
-#             quantiles=self.quantiles,
-#             zero_aware=self.zero_aware,
-#         ).apply(core.sum_to_one, axis=1)
-#         return weights
-
-#     @property
-#     def fwd_return(self) -> pd.DataFrame:
-#         fwd_return = self.prices.apply(
-#             core.pri_return, axis=0, forward=True, periods=self.periods
-#         )
-#         fwd_return = fwd_return / self.periods
-#         fwd_return = fwd_return.apply(core.demeaned, axis=1)
-#         return fwd_return
-
-#     @property
-#     def performance(self) -> pd.Series:
-#         performance = (
-#             self.fwd_return.multiply(self.weights).dropna(how="all").sum(axis=1)
-#         )
-#         return performance.add(1).cumprod()
-
-#     @property
-#     def information_coefficient(self) -> pd.Series:
-#         key = "information_coefficient"
-#         if key in self:
-#             out = pd.DataFrame(self[key])
-#             return out.set_index(out.columns[0]).squeeze()
-#         from scipy.stats import spearmanr
-
-#         ic = {}
-#         for (idx1, row1), (_, row2) in zip(
-#             self.fwd_return.iterrows(), self.factors.iterrows()
-#         ):
-#             try:
-#                 ic[idx1] = spearmanr(a=row1, b=row2, nan_policy="omit")[0]
-#             except ValueError:
-#                 pass
-#         ic = pd.Series(ic).dropna()
-#         self[key] = ic.reset_index().to_dict("records")
-#         return ic
-
-#     def to_signature(self):
-#         factors = self.factor
-
-#         return {
-#             "periods": self.periods,
-#             "quantiles": self.quantiles,
-#             "zero_aware": self.zero_aware,
-#             "weights": self.weights.reset_index().to_dict("records"),
-#             "performance": self.performance.reset_index().to_dict("records"),
-#         }

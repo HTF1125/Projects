@@ -9,7 +9,7 @@ import time
 import dash_mantine_components as dmc
 from dash import html, Output, Input, no_update, callback, State
 from dash_iconify import DashIconify
-
+from app.api import factor
 
 def log_in():
     return html.Div(
@@ -78,7 +78,15 @@ def get_universe():
         value=data[0],
         persistence=True,
     )
-
+def get_factor():
+    data = list(factor.__all__)
+    return dmc.Select(
+        label="Investment Factor",
+        data=data,
+        id="user-factor",
+        value=data[0],
+        persistence=True,
+    )
 
 def get_periods():
     return dmc.NumberInput(
@@ -118,6 +126,6 @@ def get_factor_args():
         children=[
             get_universe(),
             get_periods(),
-            get_commission(),
+            get_factor(),
         ],
     )
