@@ -1,7 +1,11 @@
+
+
+
+
 import pandas as pd
-from .universe import Universe
-from .regime import UsLei, VolState, AbsorptionRatio
-from .. import core
+from ..universe import Universe
+from ..regime import UsLei, VolState, AbsorptionRatio
+from ... import core
 
 
 def PxMo1M(universe: Universe) -> pd.DataFrame:
@@ -122,17 +126,17 @@ def PxMo36M2M(universe: Universe) -> pd.DataFrame:
     )
 
 
-def VCV1M(universe: Universe) -> pd.DataFrame:
+def Vcv1M(universe: Universe) -> pd.DataFrame:
     px_volume = universe.get_volumes()
     return -px_volume.apply(core.CV, window=21 * 1)
 
 
-def VCV3M(universe: Universe) -> pd.DataFrame:
+def Vcv3M(universe: Universe) -> pd.DataFrame:
     px_volume = universe.get_volumes()
     return -px_volume.apply(core.CV, window=21 * 3)
 
 
-def VCV6M(universe: Universe) -> pd.DataFrame:
+def Vcv6M(universe: Universe) -> pd.DataFrame:
     px_volume = universe.get_volumes()
     return -px_volume.apply(core.CV, window=21 * 6)
 
@@ -144,7 +148,8 @@ def PxVol1M(universe: Universe) -> pd.DataFrame:
 def PxVol3M(universe: Universe) -> pd.DataFrame:
     return universe.get_prices().apply(core.log_return).apply(core.STDEV, window=21 * 3)
 
-def OecdUsCli3Y(universe: Universe) -> pd.DataFrame:
+
+def UsCli3Y(universe: Universe) -> pd.DataFrame:
     pri_return = universe.get_prices().apply(core.pri_return, forward=True)
     states = UsLei().fit().states.reindex(pri_return.index).ffill()
     grouped = pri_return.set_index(states, append=True).groupby(by=[states.name])
@@ -152,7 +157,8 @@ def OecdUsCli3Y(universe: Universe) -> pd.DataFrame:
     final.index = states.index
     return final
 
-def OecdUsCli5Y(universe: Universe) -> pd.DataFrame:
+
+def UsCli5Y(universe: Universe) -> pd.DataFrame:
     pri_return = universe.get_prices().apply(core.pri_return, forward=True)
     states = UsLei().fit().states.reindex(pri_return.index).ffill()
     grouped = pri_return.set_index(states, append=True).groupby(by=[states.name])
@@ -161,7 +167,7 @@ def OecdUsCli5Y(universe: Universe) -> pd.DataFrame:
     return final
 
 
-def OecdUsCli10Y(universe: Universe) -> pd.DataFrame:
+def UsCli10Y(universe: Universe) -> pd.DataFrame:
     pri_return = universe.get_prices().apply(core.pri_return, forward=True)
     states = UsLei().fit().states.reindex(pri_return.index).ffill()
     grouped = pri_return.set_index(states, append=True).groupby(by=[states.name])
@@ -178,6 +184,7 @@ def Vix3Y(universe: Universe) -> pd.DataFrame:
     final.index = states.index
     return final
 
+
 def Vix5Y(universe: Universe) -> pd.DataFrame:
     pri_return = universe.get_prices().apply(core.pri_return, forward=True)
     states = VolState().fit().states.reindex(pri_return.index).ffill()
@@ -192,13 +199,5 @@ def Vix10Y(universe: Universe) -> pd.DataFrame:
     states = VolState().fit().states.reindex(pri_return.index).ffill()
     grouped = pri_return.set_index(states, append=True).groupby(by=[states.name])
     final = grouped.transform(core.EMA, window=(252 * 10 // 2))
-    final.index = states.index
-    return final
-
-def AR1Y(universe: Universe) -> pd.DataFrame:
-    pri_return = universe.get_prices().apply(core.pri_return, forward=True)
-    states = AbsorptionRatio().fit().states.reindex(pri_return.index).ffill()
-    grouped = pri_return.set_index(states, append=True).groupby(by=[states.name])
-    final = grouped.transform(core.EMA, window=(252 * 1 // 2))
     final.index = states.index
     return final

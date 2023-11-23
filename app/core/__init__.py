@@ -27,7 +27,7 @@ def cov_to_cor(cov: pd.DataFrame) -> pd.DataFrame:
 def to_quantile(
     x: pd.Series,
     quantiles: int = 5,
-    zero_aware: bool = False,
+    zero_aware: int = 0,
 ) -> pd.Series:
     if len(x.dropna()) < quantiles:
         return pd.Series(data=None)
@@ -49,15 +49,12 @@ def sum_to_one(x):
     return x / sum(x)
 
 
-def demeaned(x):
-    if isinstance(x, pd.Series):
-        x = x.dropna()
-    return x - (sum(x) / len(x))
+def demeaned(x: pd.Series) -> pd.Series:
+    return x - x.mean()
 
 
 def get_sp500_ticker_list():
     # Read and print the stock tickers that make up S&P500
-    tickers = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies")[
-        0
-    ]
+    url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+    tickers = pd.read_html(url)[0]
     return tickers

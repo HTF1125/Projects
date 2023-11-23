@@ -8,12 +8,11 @@ def pri_return(
     px_last: pd.Series,
     periods: int = 1,
     forward: bool = False,
-    demeaned: bool = False,
 ) -> pd.Series:
-    out = px_last / px_last.shift(1) - 1
+    out = px_last / px_last.shift(periods) - 1
     if forward:
-        return out.shift(periods=-periods).iloc[:-periods]
-    return out.iloc[periods:]
+        return out.shift(periods=-periods)
+    return out
 
 
 def log_return(
@@ -57,35 +56,6 @@ def ann_sharpe(
     ) / ann_volatility(px_last=px_last, ann_factor=ann_factor)
 
 
-def information_coefficient(
-    forward_returns: pd.DataFrame,
-    factor_data: pd.DataFrame,
-) -> pd.Series:
-    """
-    Calculate the information coefficient between forward returns and factor data.
-
-    Args:
-        forward_returns (pd.DataFrame): DataFrame containing forward returns data.
-        factor_data (pd.DataFrame): DataFrame containing factor data.
-
-    Returns:
-        pd.Series: Series containing information coefficients calculated for each date.
-    """
-    # Combine the data
-    from scipy.stats import spearmanr
-
-    combined_data = pd.concat([forward_returns.stack(), factor_data.stack()], axis=1)
-    combined_data = combined_data.dropna().reset_index()
-    combined_data.columns = ["Date", "Ticker", "Factor", "Return"]
-
-    # Calculate information coefficient for each date
-    info_coefficient = combined_data.groupby("Date").apply(
-        lambda x: spearmanr(a=x["Factor"], b=x["Return"])[0]
-    )
-    info_coefficient.name = "InformationCoefficient"
-
-    return info_coefficient
-
 
 def get_absorption_ratio(data: pd.DataFrame, n_components=5, a_components: int = 3):
     from sklearn.decomposition import PCA
@@ -111,3 +81,13 @@ def CVaR(px_last: pd.Series, alpha: float = 0.05) -> float:
     cutoff_index = int((len(returns) - 1) * alpha)
     return np.mean(np.partition(returns, cutoff_index)[:cutoff_index + 1])
 
+
+
+def turnover(weights: pd.DataFrame) -> pd.Series:
+    return weights.diff().abs().sum(axis=1)
+
+
+def mean_fwd_return(px_last: pd.Series, periods: int = 1) -> pd.Series:
+    mean = pri_return(px_last=px_last, periods=periods, forward=True)
+    mean = mean / periods
+    return mean

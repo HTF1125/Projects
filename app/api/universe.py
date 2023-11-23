@@ -1,15 +1,8 @@
-from typing import Optional, List, Callable
+from typing import Optional, List, Callable, Dict, Union, List
 import numpy as np
 import pandas as pd
 from .. import core
 from .. import db
-from .portfolio import Portfolio
-
-
-class Payload(dict):
-    def __missing__(self, key):
-        self[key] = Payload()
-        return self[key]
 
 
 class Universe:
@@ -49,10 +42,9 @@ class Universe:
         self,
         assets: List[str],
     ) -> None:
-        self.payload = Payload()
-
         self.assets = sorted(assets)
         self.num_assets = len(self.assets)
+        self.factors = {}
 
     def get_prices(
         self,
@@ -145,26 +137,107 @@ class Universe:
 
     def add_factor(
         self,
-        factor: Callable[..., pd.DataFrame],
+        func: Callable[..., pd.DataFrame],
+        periods: Union[int, List[int]] = 1,
         quantiles: int = 5,
-        commission: int = 10,
-        zero_aware: bool = False,
-        demean: bool = True,
+        zero_aware: int = 0,
     ) -> "Universe":
         """add factor"""
-        data = factor(self).dropna(thresh=quantiles, axis=1)
-        group = data.apply(
-            core.to_quantile,
-            axis=1,
-            quantiles=quantiles,
-            zero_aware=zero_aware,
-        )
-        weights = group.apply(core.sum_to_one, axis=1).dropna(how="all")
-        turnover = weights.diff().abs().sum(axis=1)
-        fwd_return = self.get_fwd_return(periods=1)
-        if demean: fwd_return = fwd_return.apply(core.demeaned, axis=1)
-        fac_return = fwd_return.multiply(weights).dropna(how="all").sum(axis=1)
-        fac_return = fac_return - turnover * commission / 10_000
-        alpha = fac_return.add(1).cumprod()
-        alpha.plot()
+        key = f"{func.__name__}(q:{quantiles}; za:{zero_aware})"
+        prices = self.get_prices()
+        if key in self.factors:
+            weights = self.factors[key]["weights"]
+            performance = self.factors[key]["performance"]
+        else:
+            factors = func(self).reindex(index=prices.index, columns=prices.columns)
+            weights = factors.apply(
+                core.to_quantile, axis=1, quantiles=quantiles, zero_aware=zero_aware
+            ).apply(core.sum_to_one, axis=1)
+            performance = pd.DataFrame()
+            self.factors.update({key: {"factors": factors, "weights": weights}})
+        for p in [periods] if isinstance(periods, int) else periods:
+            if p in performance.columns:
+                continue
+            fwd_return = prices.apply(core.mean_fwd_return, periods=p)
+            fwd_return = fwd_return.apply(core.demeaned, axis=1)
+            fac_return = fwd_return.multiply(weights).dropna(how="all").sum(axis=1)
+            perf = fac_return.add(1).cumprod()
+            perf.name = p
+            performance = pd.concat([performance, perf], axis=1)
+        self.factors[key].update({"performance": performance.sort_index(axis=1)})
         return self
+
+
+
+
+
+
+# class Factor:
+#     def __init__(
+#         self,
+#         func: Callable[..., pd.DataFrame],
+#         universe: Universe,
+#         periods: int = 1,
+#         quantiles: int = 5,
+#         zero_aware: bool = False,
+#     ) -> None:
+#         self.factors = func(universe)
+#         self.periods = periods
+#         self.quantiles = quantiles
+#         self.zero_aware = zero_aware
+
+#     def weights(self) -> pd.DataFrame:
+#         weights = self.factors.apply(
+#             core.to_quantile,
+#             axis=1,
+#             quantiles=self.quantiles,
+#             zero_aware=self.zero_aware,
+#         ).apply(core.sum_to_one, axis=1)
+#         return weights
+
+#     @property
+#     def fwd_return(self) -> pd.DataFrame:
+#         fwd_return = self.prices.apply(
+#             core.pri_return, axis=0, forward=True, periods=self.periods
+#         )
+#         fwd_return = fwd_return / self.periods
+#         fwd_return = fwd_return.apply(core.demeaned, axis=1)
+#         return fwd_return
+
+#     @property
+#     def performance(self) -> pd.Series:
+#         performance = (
+#             self.fwd_return.multiply(self.weights).dropna(how="all").sum(axis=1)
+#         )
+#         return performance.add(1).cumprod()
+
+#     @property
+#     def information_coefficient(self) -> pd.Series:
+#         key = "information_coefficient"
+#         if key in self:
+#             out = pd.DataFrame(self[key])
+#             return out.set_index(out.columns[0]).squeeze()
+#         from scipy.stats import spearmanr
+
+#         ic = {}
+#         for (idx1, row1), (_, row2) in zip(
+#             self.fwd_return.iterrows(), self.factors.iterrows()
+#         ):
+#             try:
+#                 ic[idx1] = spearmanr(a=row1, b=row2, nan_policy="omit")[0]
+#             except ValueError:
+#                 pass
+#         ic = pd.Series(ic).dropna()
+#         self[key] = ic.reset_index().to_dict("records")
+#         return ic
+
+#     def to_signature(self):
+#         factors = self.factor
+
+#         return {
+#             "periods": self.periods,
+#             "quantiles": self.quantiles,
+#             "zero_aware": self.zero_aware,
+#             "weights": self.weights.reset_index().to_dict("records"),
+#             "performance": self.performance.reset_index().to_dict("records"),
+#         }
