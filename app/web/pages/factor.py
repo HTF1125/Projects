@@ -106,17 +106,17 @@ import dash_ag_grid as dag
     Output("factor-chart-title", "children"),
     Input("user-factor-test", "n_clicks"),
     State("user-universe", "value"),
-    # State("user-periods", "value"),
-    # State("user-factor", "value"),
+    State("user-periods", "value"),
+    State("user-factor", "value"),
 )
 def compute_factor_data(
     n_clicks: int,
     universe: str,
-    # periods: int,
-    # factor: str,
+    periods: int,
+    factor: str,
 ):
     uni = Universe.from_code(universe)
-    uni.f.append(list(factor.__all__), periods=1)
+    uni.f.append(factor, periods=periods)
     # performances = factor_test(
     #     universe=universe, periods=periods, commission=commission
     # )
@@ -156,7 +156,6 @@ def compute_factor_data(
     fig.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",  # Set plot background color as transparent
         paper_bgcolor="rgba(0,0,0,0)",  # Set paper background color as transparent
-        # hovermode="x unified",
         legend={
             "orientation": "h",
             "xanchor": "center",

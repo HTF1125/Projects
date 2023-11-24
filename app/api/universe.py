@@ -1,9 +1,8 @@
-from typing import Optional, List, Callable, Dict, Union, List, Tuple, Set
+from typing import Optional, List, Callable, Dict, Union, List, Tuple, Set, Type
 import numpy as np
 import pandas as pd
 from .. import core
 from .. import db
-
 
 
 class Universe:
@@ -32,20 +31,28 @@ class Universe:
         ],
     }
 
+    _instances: Dict[tuple, "Universe"] = {}
+
     @classmethod
-    def from_code(
-        cls,
-        code: str,
-    ) -> "Universe":
+    def from_code(cls, code: str) -> "Universe":
         return cls(cls.UNIVERSE[code])
 
-    def __init__(
-        self,
-        assets: List[str],
-    ) -> None:
-        self.assets = sorted(assets)
-        self.num_assets = len(self.assets)
-        self.f = Factors(self)
+    def __new__(cls, assets: List[str]) -> "Universe":
+        key = tuple(sorted(assets))
+        if key in cls._instances:
+            return cls._instances[key]
+        instance = super().__new__(cls)
+        instance.assets = tuple(sorted(assets))
+        instance.num_assets = len(instance.assets)
+        instance.f = Factors(instance)
+        cls._instances[key] = instance
+        return instance
+
+    def __init__(self, assets: List[str]) -> None:
+        if tuple(sorted(assets)) not in self.__class__._instances:
+            self.assets = tuple(sorted(assets))
+            self.num_assets = len(self.assets)
+            self.f = Factors(self)
 
     def get_prices(
         self,
@@ -164,7 +171,9 @@ class Factors:
         self,
         func: Union[
             str,
-            List[str], Tuple[str], Set[str],
+            List[str],
+            Tuple[str],
+            Set[str],
             Callable[..., pd.DataFrame],
             List[Callable[..., pd.DataFrame]],
         ],
@@ -184,6 +193,7 @@ class Factors:
 
         if isinstance(func, str):
             from . import factor
+
             func = getattr(factor, func)
             if not isinstance(func, Callable):
                 return
@@ -237,9 +247,5 @@ class Factors:
                 fig.add_trace(trace=trace)
         return fig
 
-
     def signature(self) -> Dict:
-
         return {}
-
-

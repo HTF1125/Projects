@@ -92,7 +92,7 @@ def get_periods():
     return dmc.NumberInput(
         label="Investment Horizon (Day)",
         id="user-periods",
-        value=5,
+        value=1,
         min=0,
         max=250,
         step=5,
@@ -125,7 +125,7 @@ def get_factor_args():
         style=style,
         children=[
             get_universe(),
-            # get_periods(),
+            get_periods(),
             get_factor(),
         ],
     )

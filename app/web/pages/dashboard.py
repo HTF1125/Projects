@@ -54,7 +54,7 @@ class CapitalMarkets(Page):
     def layout(cls):
         return html.Div(
             children=[
-                log_in(),
+                # log_in(),
                 html.H1(__name__),
                 dcc.DatePickerRange(
                     id="my-date-picker-range",
