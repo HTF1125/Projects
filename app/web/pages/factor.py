@@ -107,16 +107,16 @@ import dash_ag_grid as dag
     Input("user-factor-test", "n_clicks"),
     State("user-universe", "value"),
     # State("user-periods", "value"),
-    State("user-factor", "value"),
+    # State("user-factor", "value"),
 )
 def compute_factor_data(
     n_clicks: int,
     universe: str,
     # periods: int,
-    factor: str,
+    # factor: str,
 ):
     uni = Universe.from_code(universe)
-    uni.f.append(factor, periods=[1, 5, 10])
+    uni.f.append(list(factor.__all__), periods=1)
     # performances = factor_test(
     #     universe=universe, periods=periods, commission=commission
     # )
@@ -154,15 +154,8 @@ def compute_factor_data(
     #     fig.add_trace(trace=go.Scatter(x=i_factor.index, y=i_factor.values, name=f))
     fig = uni.f.plot()
     fig.update_layout(
-        # plot_bgcolor='rgba(0,0,0,0)',  # Set plot background color as transparent
-        # paper_bgcolor='rgba(0,0,0,0)',  # Set paper background color as transparent
-        # showlegend=False,  # Hide the legend for a cleaner border look
-        # autosize=False,  # Disable autosizing to maintain border consistency
-        # width=600,  # Set the width of the chart
-        # height=height,  # Set the height of the chart
-        # margin=dict(l=20, r=20),  # Adjust the margins as needed
-        # paper_bordercolor='black',  # Set the border color
-        # paper_borderwidth=1  # Set the border width
+        plot_bgcolor="rgba(0,0,0,0)",  # Set plot background color as transparent
+        paper_bgcolor="rgba(0,0,0,0)",  # Set paper background color as transparent
         # hovermode="x unified",
         legend={
             "orientation": "h",

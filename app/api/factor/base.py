@@ -150,7 +150,7 @@ def PxVol3M(universe: Universe) -> pd.DataFrame:
 
 
 def UsCli3Y(universe: Universe) -> pd.DataFrame:
-    pri_return = universe.get_prices().apply(core.pri_return, forward=True)
+    pri_return = universe.get_prices().apply(core.pri_return)
     states = UsLei().fit().states.reindex(pri_return.index).ffill()
     grouped = pri_return.set_index(states, append=True).groupby(by=[states.name])
     final = grouped.transform(core.EMA, window=(252 * 3 // 2))
@@ -159,7 +159,7 @@ def UsCli3Y(universe: Universe) -> pd.DataFrame:
 
 
 def UsCli5Y(universe: Universe) -> pd.DataFrame:
-    pri_return = universe.get_prices().apply(core.pri_return, forward=True)
+    pri_return = universe.get_prices().apply(core.pri_return)
     states = UsLei().fit().states.reindex(pri_return.index).ffill()
     grouped = pri_return.set_index(states, append=True).groupby(by=[states.name])
     final = grouped.transform(core.EMA, window=(252 * 5 // 2))
@@ -168,7 +168,7 @@ def UsCli5Y(universe: Universe) -> pd.DataFrame:
 
 
 def UsCli10Y(universe: Universe) -> pd.DataFrame:
-    pri_return = universe.get_prices().apply(core.pri_return, forward=True)
+    pri_return = universe.get_prices().apply(core.pri_return)
     states = UsLei().fit().states.reindex(pri_return.index).ffill()
     grouped = pri_return.set_index(states, append=True).groupby(by=[states.name])
     final = grouped.transform(core.EMA, window=(252 * 10 // 2))
@@ -177,7 +177,7 @@ def UsCli10Y(universe: Universe) -> pd.DataFrame:
 
 
 def Vix3Y(universe: Universe) -> pd.DataFrame:
-    pri_return = universe.get_prices().apply(core.pri_return, forward=True)
+    pri_return = universe.get_prices().apply(core.pri_return)
     states = VolState().fit().states.reindex(pri_return.index).ffill()
     grouped = pri_return.set_index(states, append=True).groupby(by=[states.name])
     final = grouped.transform(core.EMA, window=(252 * 3 // 2))
@@ -186,7 +186,7 @@ def Vix3Y(universe: Universe) -> pd.DataFrame:
 
 
 def Vix5Y(universe: Universe) -> pd.DataFrame:
-    pri_return = universe.get_prices().apply(core.pri_return, forward=True)
+    pri_return = universe.get_prices().apply(core.pri_return)
     states = VolState().fit().states.reindex(pri_return.index).ffill()
     grouped = pri_return.set_index(states, append=True).groupby(by=[states.name])
     final = grouped.transform(core.EMA, window=(252 * 5 // 2))
@@ -195,7 +195,7 @@ def Vix5Y(universe: Universe) -> pd.DataFrame:
 
 
 def Vix10Y(universe: Universe) -> pd.DataFrame:
-    pri_return = universe.get_prices().apply(core.pri_return, forward=True)
+    pri_return = universe.get_prices().apply(core.pri_return)
     states = VolState().fit().states.reindex(pri_return.index).ffill()
     grouped = pri_return.set_index(states, append=True).groupby(by=[states.name])
     final = grouped.transform(core.EMA, window=(252 * 10 // 2))
