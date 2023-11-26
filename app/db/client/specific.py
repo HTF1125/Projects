@@ -41,7 +41,7 @@ def get_yields() -> pd.DataFrame:
         "DGS20": "20Y",
         "DGS30": "30Y",
     }
-    data = get_data(tickers=list(tickers.keys()), factors="PX_LAST")
+    data = get_data(tickers=", ".join(list(tickers.keys())), factors="PX_LAST")
     data = data.rename(columns=tickers)
     data = data.filter(items=list(tickers.values()))
     return data

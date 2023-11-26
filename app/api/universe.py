@@ -1,9 +1,28 @@
-from typing import Optional, List, Callable, Dict, Union, List, Tuple, Set
+from typing import Optional, List, Callable, Dict, Union, List, Tuple, Set, Type
 import numpy as np
 import pandas as pd
 from .. import core
 from .. import db
 
+
+__instances__ = {}
+
+
+def get_universe(
+    code: Optional[str] = None, assets: Optional[List[str]] = None
+) -> "Universe":
+    if code:
+        assets = Universe.UNIVERSE.get(code)
+    if not assets:
+        assets = assets
+    if assets is None:
+        raise ValueError("...")
+    key = tuple(sorted(assets))
+    if key in __instances__:
+        return __instances__[key]
+    instance = Universe(assets=key)
+    __instances__[key] = instance
+    return instance
 
 
 class Universe:
@@ -27,23 +46,13 @@ class Universe:
             "TLT",
             "GSG",
             "TIP",
-            "IVV",
             "GLD",
+            "EEM",
         ],
     }
 
-    @classmethod
-    def from_code(
-        cls,
-        code: str,
-    ) -> "Universe":
-        return cls(cls.UNIVERSE[code])
-
-    def __init__(
-        self,
-        assets: List[str],
-    ) -> None:
-        self.assets = sorted(assets)
+    def __init__(self, assets: Tuple[str, ...]) -> None:
+        self.assets = tuple(sorted(assets))
         self.num_assets = len(self.assets)
         self.f = Factors(self)
 
@@ -164,7 +173,9 @@ class Factors:
         self,
         func: Union[
             str,
-            List[str], Tuple[str], Set[str],
+            List[str],
+            Tuple[str],
+            Set[str],
             Callable[..., pd.DataFrame],
             List[Callable[..., pd.DataFrame]],
         ],
@@ -184,6 +195,7 @@ class Factors:
 
         if isinstance(func, str):
             from . import factor
+
             func = getattr(factor, func)
             if not isinstance(func, Callable):
                 return
@@ -237,9 +249,5 @@ class Factors:
                 fig.add_trace(trace=trace)
         return fig
 
-
     def signature(self) -> Dict:
-
         return {}
-
-

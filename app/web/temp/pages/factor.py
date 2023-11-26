@@ -6,10 +6,8 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from app import core
-from app.api import Universe
 from .. import components
-from app.api import factor
-
+from app import api
 
 logger = logging.getLogger(__name__)
 
@@ -106,15 +104,18 @@ import dash_ag_grid as dag
     Output("factor-chart-title", "children"),
     Input("user-factor-test", "n_clicks"),
     State("user-universe", "value"),
+    State("user-periods", "value"),
     State("user-factor", "value"),
+    prevent_initial_call=True,
 )
 def compute_factor_data(
     n_clicks: int,
-    u: str,
-    f: str,
+    universe: str,
+    periods: int,
+    factor: str,
 ):
-    # uni = Universe.from_code(universe)
-    # uni.f.append(factor, periods=[1, 5, 10])
+    uni = api.get_universe(code=universe)
+    uni.f.append(factor, periods=periods)
     # performances = factor_test(
     #     universe=universe, periods=periods, commission=commission
     # )
@@ -150,11 +151,10 @@ def compute_factor_data(
     # for f in i_performances:
     #     i_factor = i_performances[f]
     #     fig.add_trace(trace=go.Scatter(x=i_factor.index, y=i_factor.values, name=f))
-    fig = factor_test(u, f)
+    fig = uni.f.plot()
     fig.update_layout(
-        plot_bgcolor='rgba(0,0,0,0)',  # Set plot background color as transparent
-        paper_bgcolor='rgba(0,0,0,0)',  # Set paper background color as transparent
-        hovermode="x unified",
+        plot_bgcolor="rgba(0,0,0,0)",  # Set plot background color as transparent
+        paper_bgcolor="rgba(0,0,0,0)",  # Set paper background color as transparent
         legend={
             "orientation": "h",
             "xanchor": "center",
@@ -192,8 +192,10 @@ def cache_plt(chart, universe, cache):
 
 from functools import lru_cache
 
-@lru_cache()
-def factor_test(_universe: str, _factor: str):
-    uni = Universe.from_code(_universe)
-    uni.f.append(_factor, periods=[1, 5, 10])
-    return uni.f.plot()
+# @lru_cache()
+# def factor_test(universe: str, periods: int = 21, commission=10):
+#     multi_factors = MultiFactors(Universe.from_code(code=universe))
+#     performances = multi_factors.to_performance(
+#         periods=periods, commission=commission
+#     ).ffill()
+#     return performances

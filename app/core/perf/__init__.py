@@ -1,5 +1,5 @@
 """ROBERT"""
-from typing import Union
+from typing import Union, Optional
 import numpy as np
 import pandas as pd
 
@@ -56,11 +56,9 @@ def ann_sharpe(
     ) / ann_volatility(px_last=px_last, ann_factor=ann_factor)
 
 
-
 def get_absorption_ratio(data: pd.DataFrame, n_components=5, a_components: int = 3):
     from sklearn.decomposition import PCA
     from ..stat import StandardScaler
-
     normalized_data = data.apply(StandardScaler, axis=1)
     pca = PCA(n_components=n_components)
     pca.fit(normalized_data.values)
@@ -79,8 +77,7 @@ def VaR(px_last: pd.Series, alpha: float = 0.05) -> float:
 def CVaR(px_last: pd.Series, alpha: float = 0.05) -> float:
     returns = pri_return(px_last).dropna()
     cutoff_index = int((len(returns) - 1) * alpha)
-    return np.mean(np.partition(returns, cutoff_index)[:cutoff_index + 1])
-
+    return np.mean(np.partition(returns, cutoff_index)[: cutoff_index + 1])
 
 
 def turnover(weights: pd.DataFrame) -> pd.Series:
@@ -91,3 +88,13 @@ def mean_fwd_return(px_last: pd.Series, periods: int = 1) -> pd.Series:
     mean = pri_return(px_last=px_last, periods=periods, forward=True)
     mean = mean / periods
     return mean
+
+
+def drawdown(px_last: pd.Series, window: Optional[int] = None) -> pd.Series:
+    if window:
+        return px_last / px_last.rolling(window).max() - 1
+    return px_last / px_last.expanding().max() - 1
+
+
+def MaxDrawDown(px_last: pd.Series, window: Optional[int] = None) -> float:
+    return - drawdown(px_last=px_last, window=window).min()
