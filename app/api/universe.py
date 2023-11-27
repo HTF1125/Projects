@@ -261,7 +261,7 @@ class Factors:
                 "itemsizing": "constant",
             },
             yaxis={
-                "tickformat": ".2f%",
+                "tickformat": ".0%",
             },
             margin={
                 "t": 0,

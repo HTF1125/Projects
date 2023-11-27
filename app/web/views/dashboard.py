@@ -1,10 +1,8 @@
-from datetime import date
 from dash import html, dcc, callback, Output, Input, State
 from app import db
 import plotly.express as px
 from app.db.models import TbMarketReport
 import dash_bootstrap_components as dbc
-import dash_mantine_components as dmc
 from .. import components
 
 
@@ -68,19 +66,27 @@ class CapitalMarkets(Page):
                     persistence=True,
                 ),
                 html.Div(
-                    dcc.Loading(
-                        dcc.Graph(
-                            id="yield-curve-chart",
-                            config={"displayModeBar": False},
-                        )
-                    )
+                    [
+                        dcc.Loading(id="yield-curve-loader"),
+                        dcc.Loading(
+                            dcc.Graph(
+                                figure=px.line(
+                                    db.get_sp500()
+                                    .pct_change(252)
+                                    .rolling(252 * 10)
+                                    .mean()
+                                ),
+                                config={"displayModeBar": False},
+                            )
+                        ),
+                    ]
                 ),
             ]
         )
 
 
 @callback(
-    Output("yield-curve-chart", "figure"),
+    Output("yield-curve-loader", "children"),
     Input("capital-markets-date-range-picker", "value"),
 )
 def update_output(value):
@@ -94,4 +100,9 @@ def update_output(value):
         yields = yields.loc[:end]
     n_data = len(yields)
     yields = yields.ffill().iloc[:: n_data // 100, :]
-    return px.line(yields)
+    return dcc.Graph(
+        id="yield-curve-chart",
+        config={"displayModeBar": False},
+        figure=px.line(yields),
+        style={"min-height": "300px"},
+    )

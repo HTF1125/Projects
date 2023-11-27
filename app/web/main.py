@@ -68,26 +68,16 @@ app.layout = fuc.FefferyTopProgress(
 def render_docs_content(pathname):
     """路由回调"""
     import uuid
-    import time
-
     pathname = pathname.replace("/", "")
     if pathname == "":
-        pathname = "dashboard"
-    time.sleep(0.3)
-    try:
-        return (
-            getattr(views, pathname)().layout(),
-            str(uuid.uuid4()),
-            pathname,
-            f"Welcom to {pathname}",
-        )
-    except:
-        return (
-            fac.AntdText("Error"),
-            str(uuid.uuid4()),
-            pathname,
-            f"Welcom to {pathname}",
-        )
+        pathname = "Dashboard"
+    return (
+        getattr(views, pathname)().layout(),
+        str(uuid.uuid4()),
+        pathname,
+        f"Welcom to {pathname}",
+    )
+
 
 
 @app.callback(
