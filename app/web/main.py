@@ -1,6 +1,16 @@
-from dash import Dash, dcc, html
-from dash import callback, Output, Input, State
-from app.web import pages, components
+# from dash import Dash, dcc, html
+
+# from app.web import pages, components
+
+
+from dash import Dash, html, dcc
+from dash import Output, Input, State
+import feffery_antd_components as fac
+import feffery_utils_components as fuc
+from . import components
+from .theme import Theme
+from . import views
+
 
 
 app = Dash(
@@ -10,42 +20,121 @@ app = Dash(
 )
 
 server = app.server
-from .layout import PageLayout
 
 
-@callback(
-    Output("content-section", "children"),
+app.layout = fuc.FefferyTopProgress(
+    fuc.FefferyDiv(
+        [
+            dcc.Location(id="url"),
+            fuc.FefferyReload(id="global-reload", delay=300),
+            dcc.Store(id="side-props-width", storage_type="local"),
+            # Insert sidemenu scroll to current key
+            html.Div(id="side-div-scroll-to-current-key"),
+            # Insert scroll while page initalize.
+            html.Div(id="page-anchor-scroll-to-while-page-initial"),
+            components.Reloader(),
+            # top_section(),
+            fac.AntdRow(
+                [
+                    components.SideMenu(),
+                    fac.AntdCol(
+                        [
+                            components.Topmenu(),
+                            fuc.FefferyDiv(
+                                # html.Div(style={"minHeight": "100vh"}),
+                                id="docs-content",
+                                # style={"backgroundColor": "rgb(255, 255, 255)", "padding": "30px"},
+                            ),
+                        ],
+                        flex="auto",
+                    ),
+                ],
+                wrap=False,
+            ),
+        ],
+    )
+)
+
+
+@app.callback(
+    [
+        Output("docs-content", "children"),
+        Output("docs-content-spin-center", "key"),
+        Output("page-header", "title"),
+        Output("page-header", "subTitle"),
+    ],
     Input("url", "pathname"),
 )
-def display(pathname: str):
-    for page in pages.all_pages:
-        if page.href.startswith(pathname):
-            return page.layout()
-    raise
+def render_docs_content(pathname):
+    """路由回调"""
+    import uuid
+    import time
+
+    pathname = pathname.replace("/", "")
+    if pathname == "":
+        pathname = "dashboard"
+    time.sleep(0.3)
+    try:
+        return (
+            getattr(views, pathname)().layout(),
+            str(uuid.uuid4()),
+            pathname,
+            f"Welcom to {pathname}",
+        )
+    except:
+        return (
+            fac.AntdText("Error"),
+            str(uuid.uuid4()),
+            pathname,
+            f"Welcom to {pathname}",
+        )
 
 
-app.layout = components.GlobalLayout(
-    children=[
-        dcc.Store(id="store"),
-        dcc.Store(id="status"),
-        dcc.Location(id="url", refresh=False),
-        PageLayout(),
-        components.MainLayout(id="page"),
-    ],
+@app.callback(
+    Output("page-anchor-scroll-to-while-page-initial", "children"),
+    Input("docs-content-spin-center", "key"),
+    State("url", "hash"),
 )
+def page_anchor_scroll_to_while_page_initial(_, hash_):
+    if _ and hash_:
+        from urllib.parse import unquote
+
+        targetId = unquote(hash_)[1:]
+        return fuc.FefferyScroll(
+            scrollTargetId=targetId,
+            scrollMode="target",
+            executeScroll=True,
+            offset=0,
+        )
 
 
-
-app.clientside_callback(
-    """
-    function(trigger) {
-        //  can use any prop to trigger this callback - we just want to store the info on startup
-        const inner_width  = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-        const inner_height = window.innerHeight|| document.documentElement.clientHeight|| document.body.clientHeight;
-        const screenInfo = {height :screen.height, width: screen.width, in_width: inner_width, in_height: inner_height};
-        return screenInfo
-    }
-    """,
-    Output("store", "data"),
-    Input("store", "data"),
-)
+# @app.callback(
+#     [
+#         Output("side-div", "style"),
+#         Output("side-div-collapse-icon", "icon"),
+#     ],
+#     Input("side-div-collapse-button", "nClicks"),
+#     State("side-div", "style"),
+#     prevent_initial_call=True,
+# )
+# def handle_side_menu_collapse(n_clicks, style):
+#     if n_clicks:
+#         if style["width"] == "325px":
+#             return [
+#                 {
+#                     "width": "80px",
+#                     "height": "100vh",
+#                     "transition": "width 0.2s",
+#                     "borderRight": "1px solid rgb(240, 240, 240)",
+#                 },
+#                 "antd-arrow-right",
+#             ]
+#         return [
+#             {
+#                 "width": "325px",
+#                 "height": "100vh",
+#                 "transition": "width 0.2s",
+#                 "borderRight": "1px solid rgb(240, 240, 240)",
+#             },
+#             "antd-arrow-left",
+#         ]

@@ -2,8 +2,8 @@
 from . import core
 from . import db
 from . import web
-from .api import factor
-from .api import Universe
+from . import api
+
 def init_logger():
     import logging
 

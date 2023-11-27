@@ -1,20 +1,35 @@
-"""ROBERT"""
-from .engine import Engine
-from .config import Config
-from .session import Session
-
-__all__ = (
-    "Engine",
-    "Config",
-    "Session",
-)
+import os
+import logging
+from contextlib import contextmanager
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
+logger = logging.getLogger(__name__)
 
 
-def check_internet_connection() -> bool:
+url = os.environ.get("POSTGRESQL_URL", "sqlite:///app/db/database.db")
+
+engine = create_engine(url=url, echo=False, pool_size=20)
+
+ScopedSession = scoped_session(sessionmaker(bind=engine))
+
+
+
+@contextmanager
+def Session():
+    """
+    Provide a transactional scope around a series of operations.
+    """
+    logger.debug("Creating a new session.")
+
+    session = ScopedSession()
     try:
-        import socket
-
-        socket.create_connection(("www.google.com", 80))
-        return True
-    except OSError:
-        return False
+        yield session
+        logger.debug("Committing the session.")
+        session.commit()
+    except Exception as e:
+        logger.error(f"Error during transaction: {e}")
+        session.rollback()
+        raise e
+    finally:
+        logger.debug("Closing the session.")
+        session.close()

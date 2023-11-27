@@ -100,14 +100,14 @@ def PxMo9M2M(universe: Universe) -> pd.DataFrame:
 
 def PxMo12M2M(universe: Universe) -> pd.DataFrame:
     px_last = universe.get_prices()
-    return px_last.apply(core.MO, window=21 * 10) - px_last.apply(
+    return px_last.apply(core.MO, window=21 * 12) - px_last.apply(
         core.MO, window=21 * 2
     )
 
 
 def PxMo18M2M(universe: Universe) -> pd.DataFrame:
     px_last = universe.get_prices()
-    return px_last.apply(core.MO, window=21 * 10) - px_last.apply(
+    return px_last.apply(core.MO, window=21 * 18) - px_last.apply(
         core.MO, window=21 * 2
     )
 

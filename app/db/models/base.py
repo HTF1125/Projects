@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy import delete
 from sqlalchemy.orm import declarative_base
 import pandas as pd
-from ..common import Session, Engine
+from ..common import Session, engine
 
 logger = logging.getLogger(__name__)
 
@@ -18,19 +18,22 @@ class TbBase(Base):
 
     @classmethod
     def create(cls) -> None:
-        cls.__table__.create(Engine())
+        cls.__table__.create(engine)
 
     @classmethod
     def drop(cls) -> None:
-        cls.__table__.drop(Engine())
+        cls.__table__.drop(engine)
 
     @classmethod
     def get(cls, **kwargs) -> pd.DataFrame:
-        query = select(cls)
-        if kwargs:
-            query = query.filter_by(**kwargs)
         with Session() as session:
-            return pd.read_sql(sql=query, con=session.connection())
+            query = session.query(cls)
+            if kwargs:
+                query = query.filter_by(**kwargs)
+            return pd.read_sql(
+                sql=query.statement,
+                con=query.session.connection(),
+            )
 
     @classmethod
     def delete(cls, **kwargs):
@@ -43,7 +46,6 @@ class TbBase(Base):
 
     @classmethod
     def insert(cls, records, chunk_size=100000000):
-
         if len(records) < chunk_size:
             with Session() as session:
                 session.bulk_insert_mappings(cls, records)
@@ -117,4 +119,4 @@ class TbBase(Base):
 
     @classmethod
     def all(cls, **kwargs) -> pd.DataFrame:
-        return pd.read_sql(sql=select(cls), con=Engine(), **kwargs)
+        return pd.read_sql(sql=select(cls), con=engine, **kwargs)

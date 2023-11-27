@@ -1,5 +1,4 @@
 {
-
     // Window Editor
     "editor.rulers": [
         100
@@ -34,7 +33,7 @@
         "**/CVS": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
-        "**/__pycache__":true,
+        "**/__pycache__": true,
     },
     "hide-files.files": []
 }

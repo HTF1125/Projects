@@ -24,10 +24,9 @@ class TbMarketReport(TbBase):
     id = Column(Integer, primary_key=True, autoincrement=True)
     report = Column(JSON)
 
-
     @classmethod
     def latest(cls):
         with Session() as session:
-            max_id = session.query(func.max(cls.id)).scalar()
-            latest_report = session.query(cls).filter(cls.id == max_id).first()
+            latest_report = session.query(cls).order_by(cls.id.desc()).first()
+            print(latest_report)
             return latest_report.report

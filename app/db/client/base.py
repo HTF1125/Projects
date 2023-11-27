@@ -1,7 +1,6 @@
-
 from functools import lru_cache
 from typing import Union, List, Set, Tuple
-
+from sqlalchemy import select
 import pandas as pd
 from ..common import Session
 from ..models import TbMeta, TbData
@@ -18,6 +17,7 @@ def get_data(
             if isinstance(text, (list, set, tuple))
             else text.replace(",", " ").split()
         )
+
     tickers = validate(tickers)
     factors = validate(factors)
     cols = [
@@ -34,11 +34,13 @@ def get_data(
         query = session.query(*cols).join(TbMeta, TbMeta.id == TbData.meta_id)
         query = query.filter(TbMeta.ticker.in_(tickers))
         query = query.filter(TbData.factor.in_(factors))
-        sql = query.statement
-        con = query.session.connection()
-        data = pd.read_sql(sql=sql, con=con, parse_dates=["Date"])
-    idxs = ["Date"]
-    cols = list(set(data.columns) - set(idxs) - set(["Data"]))
-    data = pd.pivot(data=data, index=idxs, columns=cols, values="Data")
-    data = data.sort_index(axis=1)
+        data = pd.read_sql(
+            sql=query.statement,
+            con=session.connection(),
+            parse_dates=["Date"],
+        )
+        idxs = ["Date"]
+        cols = list(set(data.columns) - set(idxs) - set(["Data"]))
+        data = pd.pivot(data=data, index=idxs, columns=cols, values="Data")
+        data = data.sort_index(axis=1)
     return data

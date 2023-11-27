@@ -27,31 +27,26 @@ def init_dotenv(file_path=".env") -> bool:
             return True
         return False
 
-
-
-
-
-
-
-
-
-import app
 if init_dotenv(".env"):
     logger.info("Load `.env` Successful.")
 
 
+import app
+
+
+
 @click.command()
 @click.argument("task", default="db")
-def cli(task: str) -> None:
+@click.argument("reload", default=False)
+def cli(task: str, reload: bool = False) -> None:
     if task == "db":
         app.db.update_data()
     elif task == "web":
         logger.info("Launching Web...")
-        app.web.main.app.run(debug=True)
+        app.web.main.app.run(debug=True, use_reloader=True)
     elif task == "report":
         logger.info("[CLI]")
         from app.tasks.MarketDaily import get_report
-
         report = get_report()
         print(report)
 

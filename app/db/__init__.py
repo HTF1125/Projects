@@ -6,4 +6,4 @@ from .client import *
 from .admin import *
 from .public import *
 
-# Base.metadata.create_all(Engine())
+Base.metadata.create_all(engine)

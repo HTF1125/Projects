@@ -5,6 +5,27 @@ from .. import core
 from .. import db
 
 
+__instances__ = {}
+
+
+def get_universe(
+    code: Optional[str] = None,
+    assets: Optional[List[str]] = None,
+) -> "Universe":
+    if code:
+        assets = Universe.UNIVERSE.get(code)
+    if not assets:
+        assets = assets
+    if assets is None:
+        raise ValueError("...")
+    key = tuple(sorted(assets))
+    if key in __instances__:
+        return __instances__[key]
+    instance = Universe(assets=key)
+    __instances__[key] = instance
+    return instance
+
+
 class Universe:
     UNIVERSE = {
         "UsSectors": [
@@ -26,33 +47,15 @@ class Universe:
             "TLT",
             "GSG",
             "TIP",
-            "IVV",
             "GLD",
+            "EEM",
         ],
     }
 
-    _instances: Dict[tuple, "Universe"] = {}
-
-    @classmethod
-    def from_code(cls, code: str) -> "Universe":
-        return cls(cls.UNIVERSE[code])
-
-    def __new__(cls, assets: List[str]) -> "Universe":
-        key = tuple(sorted(assets))
-        if key in cls._instances:
-            return cls._instances[key]
-        instance = super().__new__(cls)
-        instance.assets = tuple(sorted(assets))
-        instance.num_assets = len(instance.assets)
-        instance.f = Factors(instance)
-        cls._instances[key] = instance
-        return instance
-
-    def __init__(self, assets: List[str]) -> None:
-        if tuple(sorted(assets)) not in self.__class__._instances:
-            self.assets = tuple(sorted(assets))
-            self.num_assets = len(self.assets)
-            self.f = Factors(self)
+    def __init__(self, assets: Tuple[str, ...]) -> None:
+        self.assets = tuple(sorted(assets))
+        self.num_assets = len(self.assets)
+        self.f = Factors(self)
 
     def get_prices(
         self,
@@ -245,6 +248,29 @@ class Factors:
                     name=f"{key} {p}",
                 )
                 fig.add_trace(trace=trace)
+
+        fig.update_layout(
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            legend={
+                "orientation": "h",
+                "xanchor": "center",
+                "x": 0.5,
+                "y": -0.05,
+                "yanchor": "top",
+                "itemsizing": "constant",
+            },
+            yaxis={
+                "tickformat": ".2f%",
+            },
+            margin={
+                "t": 0,
+                "l": 0,
+                "r": 0,
+                "b": 0,
+            },
+        )
+
         return fig
 
     def signature(self) -> Dict:
