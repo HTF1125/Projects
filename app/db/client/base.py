@@ -28,7 +28,7 @@ def get_data(
         else tickers.replace(",", " ").split()
     )
 
-    return data.filter(items=tickers).dropna(how="all").sort_index(ascending=False)
+    return data.filter(items=tickers).dropna(how="all").sort_index(ascending=True)
 
 
 def get_universe() -> pd.DataFrame:
