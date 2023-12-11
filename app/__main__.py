@@ -30,20 +30,20 @@ def init_dotenv(file_path=".env") -> bool:
 if init_dotenv(".env"):
     logger.info("Load `.env` Successful.")
 
-    
+
 import app
 
 
 
 @click.command()
 @click.argument("task", default="db")
-@click.argument("reload", default=False)
-def cli(task: str, reload: bool = False) -> None:
+@click.option('--reload', is_flag=True, default=False, help='Enable or disable reloading')
+def cli(task: str, reload: bool = True) -> None:
     if task == "db":
         app.db.update_data()
     elif task == "web":
         logger.info("Launching Web...")
-        app.web.main.app.run(debug=False, use_reloader=reload)
+        app.web.main.app.run(debug=True, use_reloader=reload)
     elif task == "report":
         logger.info("[CLI]")
         from app.tasks.MarketDaily import get_report

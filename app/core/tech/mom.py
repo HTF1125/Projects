@@ -70,3 +70,17 @@ def PxMom(close: pd.Series, months: int = 1) -> pd.Series:
 
 def PxRevMom(close: pd.Series, mom_months: int = 6, rev_months: int = 1) -> pd.Series:
     return PxMom(close=close, months=mom_months) - PxMom(close=close, months=rev_months)
+
+
+def MACD(
+    px_last: pd.Series,
+    fast: int = 12,
+    slow: int = 26,
+    signal: int = 9,
+) -> pd.Series:
+    from .ma import EMA
+
+    slow_ma = EMA(px_last=px_last, window=slow)
+    fast_ma = EMA(px_last=px_last, window=fast)
+    return EMA(fast_ma - slow_ma, window=signal)
+

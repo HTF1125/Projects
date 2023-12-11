@@ -6,12 +6,12 @@ import numpy as np
 import pandas as pd
 
 
-def VAR(data: pd.Series, window: int = 30, ddof: int = 1) -> pd.Series:
-    return data.rolling(window=window).var(ddof=ddof)
+def VAR(data: pd.Series, ddof: int = 1) -> float:
+    return float(data.var(ddof=ddof))
 
 
-def STDEV(data: pd.Series, window: int = 30, ddof: int = 1) -> pd.Series:
-    return VAR(data=data, window=window, ddof=ddof).apply(np.sqrt)
+def STDEV(data: pd.Series, ddof: int = 1) -> float:
+    return np.sqrt(VAR(data=data, ddof=ddof))
 
 
 def ENTP(data: pd.Series, window: int = 10, base=2.0) -> pd.Series:
@@ -32,3 +32,7 @@ def ENTP(data: pd.Series, window: int = 10, base=2.0) -> pd.Series:
 def CV(data: pd.Series, window: int = 10) -> pd.Series:
     roll = data.rolling(window=window)
     return roll.std() / roll.mean()
+
+
+def Winsorize(data: pd.Series, lower: float = -3.0, upper: float = 3.0) -> pd.Series:
+    return data.clip(lower=lower, upper=upper)

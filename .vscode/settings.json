@@ -1,9 +1,10 @@
 {
-
     // Window Editor
     "editor.rulers": [
         100
     ],
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
     "editor.cursorStyle": "line-thin",
     "editor.fontSize": 12,
     "editor.fontLigatures": true,
@@ -34,7 +35,13 @@
         "**/CVS": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
-        "**/__pycache__":true,
+        "**/__pycache__": true,
     },
-    "hide-files.files": []
+    "hide-files.files": [],
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    }
 }

@@ -4,21 +4,9 @@ from typing import Optional, Tuple
 import pandas as pd
 
 
-def StandardScaler(
-    data: pd.Series,
-    bounds: Optional[Tuple] = None,
-) -> pd.Series:
-    scaler = (data - data.mean()) / data.std()
-
-    if bounds:
-        if isinstance(bounds, tuple):
-            min_bound, max_bound = bounds
-            scaler = min_bound + (scaler - scaler.min()) * (max_bound - min_bound) / (
-                scaler.max() - scaler.min()
-            )
-            return scaler
-        warnings.warn(message="the range must be a tuple of float. i.e. (0., 1.)")
-    return scaler
+def StandardScaler(data: pd.Series, zero_aware: bool = False) -> pd.Series:
+    mean = 0 if zero_aware else data.mean()
+    return (data - mean) / data.std()
 
 
 def RobustScaler(

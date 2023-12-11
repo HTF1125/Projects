@@ -28,5 +28,4 @@ class TbMarketReport(TbBase):
     def latest(cls):
         with Session() as session:
             latest_report = session.query(cls).order_by(cls.id.desc()).first()
-            print(latest_report)
             return latest_report.report

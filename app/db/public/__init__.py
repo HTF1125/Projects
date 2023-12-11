@@ -34,7 +34,5 @@ def get_fred_data(ticker: str) -> pd.DataFrame:
         start="1900-1-1",
         end=pd.Timestamp("now"),
     ).dropna()
-    data = data.reset_index()
-    data.columns = ["date", "data"]
-    data["factor"] = "PX_LAST"
+
     return data

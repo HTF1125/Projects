@@ -1,18 +1,22 @@
 import logging
-from dash import html, dcc, callback, Output, Input, State
+from dash import html, dcc, callback, Output, Input, State, no_update
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+from .. import components
 
+from app.api import factors
 
-from app.api import factor
+import feffery_antd_components as fac
+import feffery_utils_components as fuc
 
+from app.api.universes.base import Universe
+from app import db
 
-from app import api
 def get_universe():
-    data = list(api.universe.Universe.UNIVERSE.keys())
+    data = list(db.get_universe().index.unique())
     return dmc.Select(
         label="Investment Universe",
         data=data,
@@ -20,8 +24,10 @@ def get_universe():
         value=data[0],
         persistence=True,
     )
+
+
 def get_factor():
-    data = list(factor.__all__)
+    data = list(factors.__all__)
     return dmc.Select(
         label="Investment Factor",
         data=data,
@@ -29,6 +35,7 @@ def get_factor():
         value=data[0],
         persistence=True,
     )
+
 
 def get_periods():
     return dmc.NumberInput(
@@ -67,7 +74,6 @@ def get_factor_args():
         style=style,
         children=[
             get_universe(),
-            get_periods(),
             get_factor(),
         ],
     )
@@ -94,18 +100,7 @@ class Factors:
                     children=[
                         get_factor_args(),
                         html.Div(
-                            dmc.Button(
-                                "Run",
-                                id="user-factor-test",
-                                leftIcon=DashIconify(
-                                    icon="fluent:database-plug-connected-20-filled"
-                                ),
-                                style={
-                                    "marginTop": 0,
-                                    "marginBottom": 10,
-                                    "text-align": "right",
-                                },
-                            ),
+                            fac.AntdButton("Test Factors", id="user-factor-test"),
                             style={
                                 "display": "flex",
                                 "justify-content": "center",
@@ -116,8 +111,9 @@ class Factors:
                 ),
                 html.Div(
                     children=[
-                        dcc.Markdown(
-                            children="""
+                        components.Info(
+                            dcc.Markdown(
+                                children="""
 **Universe:**
 The Universe module is specifically curated with major ETFs, simplifying your focus on essential assets.
 
@@ -137,8 +133,9 @@ Upon hitting 'run', the generated graph provides insights into the average expec
 The notation `(q=5, za=0)` signifies the use of quantiles (in this case, 5) and a non-zero-aware approach when processing factor data.
 
                                 """
+                            )
                         ),
-                        dmc.LoadingOverlay(
+                        dcc.Loading(
                             children=[
                                 html.H3(
                                     id="factor-chart-title",
@@ -162,43 +159,28 @@ The notation `(q=5, za=0)` signifies the use of quantiles (in this case, 5) and 
         )
 
 
-
-
-@callback(
-    Output("factor-performance-chart", "figure"),
-    Output("factor-chart-title", "children"),
-    Input("user-factor-test", "n_clicks"),
-    State("user-universe", "value"),
-    State("user-periods", "value"),
-    State("user-factor", "value"),
-    prevent_initial_call=True,
-)
-def compute_factor_data(
-    n_clicks: int,
-    universe: str,
-    periods: int,
-    factor: str,
-):
-    uni = api.get_universe(code=universe)
-    uni.f.append(factor, periods=periods)
-    fig = uni.f.plot()
-    fig.update_layout(
-        plot_bgcolor="rgba(0,0,0,0)",  # Set plot background color as transparent
-        paper_bgcolor="rgba(0,0,0,0)",  # Set paper background color as transparent
-        legend={
-            "orientation": "h",
-            "xanchor": "center",
-            "x": 0.5,
-            "y": -0.05,
-            "yanchor": "top",
-            "itemsizing": "constant",
-        },
-        margin={"t": 0, "l": 0, "r": 0, "b": 0},
-    )
-    return (
-        fig,
-        f"Factor Performances",
-    )
+# @callback(
+#     Output("factor-performance-chart", "figure"),
+#     Output("factor-chart-title", "children"),
+#     Input("user-factor-test", "n_clicks"),
+#     State("user-universe", "value"),
+#     State("user-periods", "value"),
+#     State("user-factor", "value"),
+#     prevent_initial_call=True,
+# )
+# def compute_factor_data(
+#     n_clicks: int,
+#     universe: str,
+#     periods: int,
+#     factor: str,
+# ):
+#     uni = api.get_universe(code=universe)
+#     uni.f.append(factor, periods=periods)
+#     fig = uni.f.plot()
+#     return (
+#         fig,
+#         f"Factor Performances",
+#     )
 
 
 def blank_fig():
@@ -209,18 +191,22 @@ def blank_fig():
     return fig
 
 
-@callback(
-    Output("cache", "chart"),
-    Input("factor-performance-chart", "figure"),
-    State("user-universe", "value"),
-    State("cache", "chart"),
-)
-def cache_plt(chart, universe, cache):
-    cache = {universe: chart}
-    return cache
+# @callback(
+#     Output("cache", "chart"),
+#     Input("factor-performance-chart", "figure"),
+#     State("user-universe", "value"),
+#     State("user-periods", "value"),
+#     State("cache", "chart"),
+# )
+# def cache_plt(chart, universe, periods, cache):
+#     if not cache:
+#         return {universe: {periods: chart}}
+#     if universe not in cache:
+#         cache[universe] = {}
+#     if periods not in cache[universe]:
+#         cache[universe] = {periods: chart}
+#     return cache
 
-
-from functools import lru_cache
 
 # @lru_cache()
 # def factor_test(universe: str, periods: int = 21, commission=10):
@@ -229,3 +215,39 @@ from functools import lru_cache
 #         periods=periods, commission=commission
 #     ).ffill()
 #     return performances
+
+
+# @callback(
+#     Output("factor-performance-chart", "figure"),
+#     Input("user-universe", "value"),
+#     State("global-cache", "data"),
+#     prevent_initial_call=True,
+# )
+# def handle_chart(universe, cache):
+#     import json
+#     from app.api import Universe
+
+#     if cache is not None:
+#         print("cache found start update")
+#         print(cache[:500])
+#         cache = json.loads(cache)
+#         Universe.from_store(cache.get("factor-test"))
+#         uni = Universe.from_code(code=universe)
+#         fig = uni.multi_factors.plot_performances()
+#         return fig
+#     print("no cache found, return no update.")
+#     return no_update
+
+
+@callback(
+    Output("factor-performance-chart", "figure"),
+    Input("user-factor-test", "nClicks"),
+    State("user-universe", "value"),
+    State("user-factor", "value"),
+    prevent_initial_call=True,
+)
+def handle_chart(nClicks, universe, factor):
+    factor_ins = getattr(factors, factor)
+    if issubclass(factor_ins, factors.Factor):
+        return factor_ins.create(universe).plot()
+    return no_update

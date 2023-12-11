@@ -2,7 +2,7 @@
 from typing import Union, Optional
 import numpy as np
 import pandas as pd
-
+from ..stat import STDEV
 
 def pri_return(
     px_last: pd.Series,
@@ -11,7 +11,7 @@ def pri_return(
 ) -> pd.Series:
     out = px_last / px_last.shift(periods) - 1
     if forward:
-        return out.shift(periods=-periods)
+        return out.shift(-periods)
     return out
 
 
@@ -59,6 +59,7 @@ def ann_sharpe(
 def get_absorption_ratio(data: pd.DataFrame, n_components=5, a_components: int = 3):
     from sklearn.decomposition import PCA
     from ..stat import StandardScaler
+
     normalized_data = data.apply(StandardScaler, axis=1)
     pca = PCA(n_components=n_components)
     pca.fit(normalized_data.values)
@@ -90,11 +91,29 @@ def mean_fwd_return(px_last: pd.Series, periods: int = 1) -> pd.Series:
     return mean
 
 
-def drawdown(px_last: pd.Series, window: Optional[int] = None) -> pd.Series:
-    if window:
-        return px_last / px_last.rolling(window).max() - 1
+def drawdown(px_last: pd.Series, periods: Optional[int] = None) -> pd.Series:
+    if periods:
+        return px_last / px_last.rolling(periods).max() - 1
     return px_last / px_last.expanding().max() - 1
 
 
-def MaxDrawDown(px_last: pd.Series, window: Optional[int] = None) -> float:
-    return - drawdown(px_last=px_last, window=window).min()
+def MaxDrawDown(px_last: pd.Series, periods: Optional[int] = None) -> float:
+    return -drawdown(px_last=px_last, periods=periods).min()
+
+
+def pct_over_200d_moving_average(px_last: pd.DataFrame) -> pd.Series:
+    from ..tech import SMA
+
+    sma_200 = SMA(px_last, window=200)
+    # Count the number of assets above their 200-day SMA
+    assets_above_sma = px_last > sma_200
+
+    # Calculate the percentage of assets above their 200-day SMA
+    pct_assets_above_sma = assets_above_sma.sum(axis=1).divide(sma_200.count(axis=1), axis=0)
+    return pct_assets_above_sma
+
+
+def information_ratio(performance1: pd.Series, performance2: pd.Series) -> float:
+    excess_return = log_return(performance1) - log_return(performance2)
+    return excess_return.mean() / STDEV(excess_return)
+    
