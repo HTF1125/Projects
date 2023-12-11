@@ -67,6 +67,7 @@ class CapitalMarkets(Page):
                 ),
                 html.Div(
                     [
+<<<<<<< HEAD
                         dcc.Loading(
                             dcc.Graph(
                                 id="us-yields",
@@ -76,6 +77,17 @@ class CapitalMarkets(Page):
                         dcc.Loading(
                             dcc.Graph(
                                 id="s&p500-chart",
+=======
+                        dcc.Loading(id="yield-curve-loader"),
+                        dcc.Loading(
+                            dcc.Graph(
+                                figure=px.line(
+                                    db.get_sp500()
+                                    .pct_change(252)
+                                    .rolling(252 * 10)
+                                    .mean()
+                                ),
+>>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
                                 config={"displayModeBar": False},
                             )
                         ),
@@ -86,20 +98,39 @@ class CapitalMarkets(Page):
 
 
 @callback(
+<<<<<<< HEAD
     Output("us-yields", "figure"),
     Output("s&p500-chart", "figure"),
+=======
+    Output("yield-curve-loader", "children"),
+>>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
     Input("capital-markets-date-range-picker", "value"),
 )
 def update_output(value):
     yields = db.get_yields()
+<<<<<<< HEAD
     start, end = value
+=======
+
+    start, end = value
+
+>>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
     if start is not None:
         yields = yields.loc[start:]
     if end is not None:
         yields = yields.loc[:end]
     n_data = len(yields)
     yields = yields.ffill().iloc[:: n_data // 100, :]
+<<<<<<< HEAD
     fig1 = px.line(yields)
     fig2 = px.line(db.get_sp500().pct_change(252).rolling(252 * 10).mean())
 
     return fig1, fig2
+=======
+    return dcc.Graph(
+        id="yield-curve-chart",
+        config={"displayModeBar": False},
+        figure=px.line(yields),
+        style={"min-height": "300px"},
+    )
+>>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302

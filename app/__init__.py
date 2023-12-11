@@ -2,8 +2,12 @@
 from . import core
 from . import db
 from . import web
+<<<<<<< HEAD
 from .api import Universe, factors, signals
 
+=======
+from . import api
+>>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
 
 def init_logger():
     import logging

@@ -59,7 +59,6 @@ def ann_sharpe(
 def get_absorption_ratio(data: pd.DataFrame, n_components=5, a_components: int = 3):
     from sklearn.decomposition import PCA
     from ..stat import StandardScaler
-
     normalized_data = data.apply(StandardScaler, axis=1)
     pca = PCA(n_components=n_components)
     pca.fit(normalized_data.values)

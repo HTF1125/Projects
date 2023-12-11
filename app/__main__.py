@@ -37,13 +37,22 @@ import app
 
 @click.command()
 @click.argument("task", default="db")
+<<<<<<< HEAD
 @click.option('--reload', is_flag=True, default=False, help='Enable or disable reloading')
 def cli(task: str, reload: bool = True) -> None:
+=======
+@click.argument("reload", default=False)
+def cli(task: str, reload: bool = False) -> None:
+>>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
     if task == "db":
         app.db.update_data()
     elif task == "web":
         logger.info("Launching Web...")
+<<<<<<< HEAD
         app.web.main.app.run(debug=True, use_reloader=reload)
+=======
+        app.web.main.app.run(debug=True, use_reloader=True)
+>>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
     elif task == "report":
         logger.info("[CLI]")
         from app.tasks.MarketDaily import get_report

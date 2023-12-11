@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 from typing import Union, List, Set, Tuple
 import os
+=======
+from functools import lru_cache
+from typing import Union, List, Set, Tuple
+from sqlalchemy import select
+>>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
 import pandas as pd
 
 
@@ -73,13 +79,25 @@ def update_meta() -> bool:
                 end=pd.Timestamp("now"),
             ).dropna()
         )
+<<<<<<< HEAD
     fred_data = pd.concat(fred_data, axis=1)
+=======
+
+    tickers = validate(tickers)
+    factors = validate(factors)
+    cols = [
+        TbData.date.label("Date"),
+        TbData.data.label("Data"),
+        TbMeta.ticker.label("Ticker"),
+    ]
+>>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
 
     meta_yahoo = meta[meta.source == "YAHOO"]
     yahoo_data = yf.download(
         tickers=list(meta_yahoo.index), actions=True, progress=True
     )
 
+<<<<<<< HEAD
     columns = {
         "TR_LAST": "Adj Close",
         "PX_LAST": "Close",
@@ -104,3 +122,19 @@ def update_meta() -> bool:
         data.to_feather(filename)
 
     return True
+=======
+    with Session() as session:
+        query = session.query(*cols).join(TbMeta, TbMeta.id == TbData.meta_id)
+        query = query.filter(TbMeta.ticker.in_(tickers))
+        query = query.filter(TbData.factor.in_(factors))
+        data = pd.read_sql(
+            sql=query.statement,
+            con=session.connection(),
+            parse_dates=["Date"],
+        )
+        idxs = ["Date"]
+        cols = list(set(data.columns) - set(idxs) - set(["Data"]))
+        data = pd.pivot(data=data, index=idxs, columns=cols, values="Data")
+        data = data.sort_index(axis=1)
+    return data
+>>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
