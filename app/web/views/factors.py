@@ -1,9 +1,5 @@
 import logging
-<<<<<<< HEAD
 from dash import html, dcc, callback, Output, Input, State, no_update
-=======
-from dash import html, dcc, callback, Output, Input, State
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import numpy as np
@@ -11,7 +7,6 @@ import pandas as pd
 import plotly.graph_objects as go
 from .. import components
 
-<<<<<<< HEAD
 from app.api import factors
 
 import feffery_antd_components as fac
@@ -22,17 +17,6 @@ from app import db
 
 def get_universe():
     data = list(db.get_universe().index.unique())
-=======
-from app.api import factor
-
-import feffery_antd_components as fac
-
-from app import api
-
-
-def get_universe():
-    data = list(api.universe.Universe.UNIVERSE.keys())
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
     return dmc.Select(
         label="Investment Universe",
         data=data,
@@ -43,11 +27,7 @@ def get_universe():
 
 
 def get_factor():
-<<<<<<< HEAD
     data = list(factors.__all__)
-=======
-    data = list(factor.__all__)
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
     return dmc.Select(
         label="Investment Factor",
         data=data,
@@ -94,10 +74,6 @@ def get_factor_args():
         style=style,
         children=[
             get_universe(),
-<<<<<<< HEAD
-=======
-            get_periods(),
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
             get_factor(),
         ],
     )
@@ -124,11 +100,7 @@ class Factors:
                     children=[
                         get_factor_args(),
                         html.Div(
-<<<<<<< HEAD
                             fac.AntdButton("Test Factors", id="user-factor-test"),
-=======
-                            fac.AntdButton("default", id="user-factor-test"),
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
                             style={
                                 "display": "flex",
                                 "justify-content": "center",
@@ -163,11 +135,7 @@ The notation `(q=5, za=0)` signifies the use of quantiles (in this case, 5) and 
                                 """
                             )
                         ),
-<<<<<<< HEAD
                         dcc.Loading(
-=======
-                        dmc.LoadingOverlay(
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
                             children=[
                                 html.H3(
                                     id="factor-chart-title",
@@ -223,7 +191,6 @@ def blank_fig():
     return fig
 
 
-<<<<<<< HEAD
 # @callback(
 #     Output("cache", "chart"),
 #     Input("factor-performance-chart", "figure"),
@@ -241,22 +208,6 @@ def blank_fig():
 #     return cache
 
 
-=======
-@callback(
-    Output("cache", "chart"),
-    Input("factor-performance-chart", "figure"),
-    State("user-universe", "value"),
-    State("user-periods", "value"),
-    State("cache", "chart"),
-)
-def cache_plt(chart, universe, periods, cache):
-    cache = {universe: {periods: chart}}
-    return cache
-
-
-from functools import lru_cache
-
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
 # @lru_cache()
 # def factor_test(universe: str, periods: int = 21, commission=10):
 #     multi_factors = MultiFactors(Universe.from_code(code=universe))
@@ -266,7 +217,6 @@ from functools import lru_cache
 #     return performances
 
 
-<<<<<<< HEAD
 # @callback(
 #     Output("factor-performance-chart", "figure"),
 #     Input("user-universe", "value"),
@@ -287,16 +237,12 @@ from functools import lru_cache
 #         return fig
 #     print("no cache found, return no update.")
 #     return no_update
-=======
-from ..components.callbacks.manager import background_callback_manager
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
 
 
 @callback(
     Output("factor-performance-chart", "figure"),
     Input("user-factor-test", "nClicks"),
     State("user-universe", "value"),
-<<<<<<< HEAD
     State("user-factor", "value"),
     prevent_initial_call=True,
 )
@@ -305,29 +251,3 @@ def handle_chart(nClicks, universe, factor):
     if issubclass(factor_ins, factors.Factor):
         return factor_ins.create(universe).plot()
     return no_update
-=======
-    State("user-periods", "value"),
-    State("cache", "data"),
-    prevent_initial_call=True,
-    background=True,
-    manager=background_callback_manager,
-    running=[
-        (Output("user-factor-test", "disabled"), True, False),
-    ],
-)
-def update_clicks(n_clicks, universe, periods, cache):
-
-    print(n_clicks)
-    if n_clicks:
-        uni = cache.get(universe)
-        if uni is not None:
-            p = uni.get(periods)
-            if p is not None:
-                return uni[p]
-
-        from app.api import factor
-        uni = api.get_universe(code=universe)
-        uni.f.append(list(factor.__all__), periods=1)
-        fig = uni.f.plot()
-        return fig
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302

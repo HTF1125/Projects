@@ -1,10 +1,6 @@
 from dash import html
 from dash import callback, Output, Input, State
 import feffery_antd_components as fac
-<<<<<<< HEAD
-=======
-from ..theme import Theme
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
 from .. import views
 
 
@@ -35,11 +31,7 @@ def Header():
             id="side-menu-header",
             style={
                 "fontWeight": "bold",
-<<<<<<< HEAD
                 "fontSize": "36px",
-=======
-                "fontSize": Theme.size[500],
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
             },
         ),
         style={
@@ -57,10 +49,7 @@ def SideMenu():
         for view in [
             views.Dashboard,
             views.CapitalMarkets,
-<<<<<<< HEAD
             views.Signals,
-=======
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
             views.Factors,
         ]
     ]
@@ -125,10 +114,7 @@ def handle_side_menu_collapse(nClicks, style):
     Input("url", "pathname"),
 )
 def handle_router_menu_key(pathname):
-<<<<<<< HEAD
     print(pathname)
-=======
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
     if pathname == "/":
         pathname = "/Dashboard"
     return pathname

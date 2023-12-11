@@ -1,19 +1,6 @@
 # from dash import Dash, dcc, html
 
 # from app.web import pages, components
-<<<<<<< HEAD
-=======
-
-
-from dash import Dash, html, dcc
-from dash import Output, Input, State
-import feffery_antd_components as fac
-import feffery_utils_components as fuc
-from . import components
-from .theme import Theme
-from . import views
-
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
 
 
 from dash import Dash, html, dcc
@@ -40,7 +27,6 @@ app.layout = fuc.FefferyTopProgress(
     fuc.FefferyDiv(
         [
             dcc.Location(id="url"),
-<<<<<<< HEAD
             # dcc.Store(id="global-cache"),
             # dcc.Interval(
             #     id="factor-test-interval",
@@ -48,8 +34,6 @@ app.layout = fuc.FefferyTopProgress(
             #     n_intervals=1,
             #     disabled=False,
             # ),
-=======
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
             fuc.FefferyReload(id="global-reload", delay=300),
             dcc.Store(id="side-props-width", storage_type="local"),
             # Insert sidemenu scroll to current key
@@ -57,10 +41,6 @@ app.layout = fuc.FefferyTopProgress(
             # Insert scroll while page initalize.
             html.Div(id="page-anchor-scroll-to-while-page-initial"),
             components.Reloader(),
-<<<<<<< HEAD
-=======
-            # top_section(),
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
             fac.AntdRow(
                 [
                     components.SideMenu(),
@@ -95,10 +75,6 @@ app.layout = fuc.FefferyTopProgress(
 def render_docs_content(pathname):
     """路由回调"""
     import uuid
-<<<<<<< HEAD
-
-=======
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
     pathname = pathname.replace("/", "")
     if pathname == "":
         pathname = "Dashboard"
@@ -110,10 +86,6 @@ def render_docs_content(pathname):
     )
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
 @app.callback(
     Output("page-anchor-scroll-to-while-page-initial", "children"),
     Input("docs-content-spin-center", "key"),
@@ -132,7 +104,6 @@ def page_anchor_scroll_to_while_page_initial(_, hash_):
         )
 
 
-<<<<<<< HEAD
 # from dash import callback, no_update
 # from .callbacks.manager import manager
 
@@ -174,35 +145,3 @@ def page_anchor_scroll_to_while_page_initial(_, hash_):
 #     out_json = json.dumps({"factor-test": out})
 #     logger.info(out_json[:200])
 #     return out_json
-=======
-# @app.callback(
-#     [
-#         Output("side-div", "style"),
-#         Output("side-div-collapse-icon", "icon"),
-#     ],
-#     Input("side-div-collapse-button", "nClicks"),
-#     State("side-div", "style"),
-#     prevent_initial_call=True,
-# )
-# def handle_side_menu_collapse(n_clicks, style):
-#     if n_clicks:
-#         if style["width"] == "325px":
-#             return [
-#                 {
-#                     "width": "80px",
-#                     "height": "100vh",
-#                     "transition": "width 0.2s",
-#                     "borderRight": "1px solid rgb(240, 240, 240)",
-#                 },
-#                 "antd-arrow-right",
-#             ]
-#         return [
-#             {
-#                 "width": "325px",
-#                 "height": "100vh",
-#                 "transition": "width 0.2s",
-#                 "borderRight": "1px solid rgb(240, 240, 240)",
-#             },
-#             "antd-arrow-left",
-#         ]
->>>>>>> 3a8d11a3ae1c822184425cb0a9faf53060b96302
