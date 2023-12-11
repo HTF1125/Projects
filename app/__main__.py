@@ -40,7 +40,7 @@ import app
 @click.option('--reload', is_flag=True, default=False, help='Enable or disable reloading')
 def cli(task: str, reload: bool = True) -> None:
     if task == "db":
-        app.db.update_data()
+        app.db.update_meta()
     elif task == "web":
         logger.info("Launching Web...")
         app.web.main.app.run(debug=True, use_reloader=reload)

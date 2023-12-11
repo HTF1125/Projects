@@ -15,14 +15,12 @@
 
 from dash import html, dcc, callback, Output, Input, State, no_update
 import feffery_antd_components as fac
-import dash_mantine_components as dmc
 import plotly.graph_objects as go
-from .factors import get_universe
-
 from app.api import signals
+from app.web.views.base import Page
 
 
-class Signals:
+class Signals(Page):
     menu = {
         "component": "Item",
         "props": {
@@ -34,25 +32,23 @@ class Signals:
         },
     }
 
-    @staticmethod
-    def get_signals():
-        options = signals.__all__
-
-        return fac.AntdSelect(
-            id="user-signal",
-            defaultValue=options[0],
-            options=[{"label": value, "value": value} for value in options],
-            style={
-                "width": 200,
-            },
-        )
-
     def layout(self):
         return html.Div(
             children=[
                 html.H1("Dynamic Allocation Signals"),
-                get_universe(),
-                self.get_signals(),
+                fac.AntdRow(
+                    children=[
+                        self.get_universe(),
+                        self.get_signal(),
+                    ],
+                    style={
+                        "margin-top": 0,
+                        "margin-bottom": 10,
+                        "display": "flex",
+                        "justify-content": "center",
+                        "align-items": "center",
+                    },
+                ),
                 html.Div(
                     fac.AntdButton("Test Signal", id="user-signal-test"),
                     style={
@@ -61,24 +57,13 @@ class Signals:
                         "align-items": "center",
                     },
                 ),
-                dcc.Loading(
-                    children=[
-                        dcc.Graph(
-                            figure=blank_fig(),
-                            id="signal-performance-chart",
-                            config={"displayModeBar": False},
-                            # style={
-                            #     "max-width" : "500px",
-                            # }
-                        ),
-                    ],
-                ),
+                html.Div(id="signal-chart"),
             ]
         )
 
 
 @callback(
-    Output("signal-performance-chart", "figure"),
+    Output("signal-chart", "children"),
     Input("user-signal-test", "nClicks"),
     State("user-universe", "value"),
     State("user-signal", "value"),
@@ -87,14 +72,13 @@ class Signals:
 def handle_chart(nClicks, universe, signal):
     signal_ins = getattr(signals, signal)
     if issubclass(signal_ins, signals.Signal):
-
-        return signal_ins.create(universe).plot()
+        return html.Div(
+            dcc.Loading(
+                dcc.Graph(
+                    figure=signal_ins.create(universe).plot(),
+                    config={"displayModeBar": False},
+                    # style={"max-width": "1000px", "height": "400px", "width": "900px"},
+                )
+            )
+        )
     return no_update
-
-
-def blank_fig():
-    fig = go.Figure(go.Scatter(x=[], y=[]))
-    fig.update_layout(template=None)
-    fig.update_xaxes(showgrid=False, showticklabels=False, zeroline=False)
-    fig.update_yaxes(showgrid=False, showticklabels=False, zeroline=False)
-    return fig

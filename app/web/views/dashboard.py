@@ -4,13 +4,11 @@ import plotly.express as px
 from app.db.models import TbMarketReport
 import dash_bootstrap_components as dbc
 from .. import components
+import feffery_antd_components as fac
+from .base import Page
 
 
-class Page:
-    ...
-
-
-class Dashboard(Page):
+class Dashboard:
     menu = {
         "component": "Item",
         "props": {

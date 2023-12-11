@@ -31,6 +31,8 @@ share/python-wheels/
 *.egg
 *.db
 *.ipynb
+*.feather
+
 MANIFEST
 
 # PyInstaller

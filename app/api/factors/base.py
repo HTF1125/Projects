@@ -76,10 +76,10 @@ class Factor:
             )
 
         fig.update_layout(
-            title=dict(
-                text="Factor Performane (Quantile)",
-                font=dict(family="Arial", size=12, color="black"),
-            ),
+            # title=dict(
+            #     text="Factor Performane (Quantile)",
+            #     font=dict(family="Arial", size=12, color="black"),
+            # ),
             yaxis=dict(overlaying="y", side="right", type="log"),
             legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"),
             hovermode="x unified",

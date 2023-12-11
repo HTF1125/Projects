@@ -1,0 +1,65 @@
+# pip install .
+# sphinx-autobuild docs/source/ docs/build/html/
+
+
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["setuptools>=61", "setuptools-scm", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "robo"
+version = "2023.15"
+authors = [
+    {name = "Robert Han", email = "roberthan1125@gmail.com"},
+]
+description = "My package description"
+readme = "README.rst"
+requires-python = ">=3.8"
+
+keywords = ["finance", "robo-advisor", "wealth-management"]
+
+
+classifiers = [
+    "Framework :: FastAPI",
+    "Programming Language :: Python :: 3",
+]
+[packages]
+myproject = "robo"
+# dependencies = [
+#     "requests",
+#     'importlib-metadata; python_version<"3.8"',
+# ]
+# dynamic = ["version"]
+
+[project.scripts]
+robo = "robo.__main__:test"
+
+# [project.urls]
+# schedule = ""
+# FAQ = ""
+# source = ""
+
+[requires]
+python = "^3.9"
+
+[project.optional-dependencies]
+test = [
+  "pytest < 5.0.0",
+  "pytest-cov[all]"
+]
+
+# [project.urls]
+# homepage = "example.com"
+# documentation = "readthedocs.org"
+# repository = "github.com"
+# changelog = "github.com/me/spam/blob/master/CHANGELOG.md"
+
+# [project.scripts]
+# spam-cli = "spam:main_cli"
+
+# [project.gui-scripts]
+# spam-gui = "spam:main_gui"
+
+# [project.entry-points."spam.magical"]

@@ -14,6 +14,8 @@ import feffery_utils_components as fuc
 
 from app.api.universes.base import Universe
 from app import db
+from .base import Page
+
 
 def get_universe():
     data = list(db.get_universe().index.unique())
@@ -79,7 +81,7 @@ def get_factor_args():
     )
 
 
-class Factors:
+class Factors(Page):
     menu = {
         "component": "Item",
         "props": {
@@ -98,7 +100,19 @@ class Factors:
                 html.H1("Factor Analysis"),
                 html.Div(
                     children=[
-                        get_factor_args(),
+                        fac.AntdRow(
+                            children=[
+                                self.get_universe(),
+                                self.get_factor(),
+                            ],
+                            style={
+                                "margin-top": 0,
+                                "margin-bottom": 10,
+                                "display": "flex",
+                                "justify-content": "center",
+                                "align-items": "center",
+                            },
+                        ),
                         html.Div(
                             fac.AntdButton("Test Factors", id="user-factor-test"),
                             style={
@@ -136,17 +150,14 @@ The notation `(q=5, za=0)` signifies the use of quantiles (in this case, 5) and 
                             )
                         ),
                         dcc.Loading(
-                            children=[
-                                html.H3(
-                                    id="factor-chart-title",
-                                    style={"text-align": "center"},
-                                ),
-                                dcc.Graph(
-                                    figure=blank_fig(),
-                                    id="factor-performance-chart",
-                                    config={"displayModeBar": False},
-                                ),
-                            ],
+                            children=html.Div(
+                                id="factor-chart",
+                                style={
+                                    "min-height": 500,
+                                    "min-width": 1000,
+                                },
+                            ),
+                            type="circle",
                         ),
                     ],
                     style={
@@ -157,38 +168,6 @@ The notation `(q=5, za=0)` signifies the use of quantiles (in this case, 5) and 
                 html.Div(id="factor-performance-stats"),
             ]
         )
-
-
-# @callback(
-#     Output("factor-performance-chart", "figure"),
-#     Output("factor-chart-title", "children"),
-#     Input("user-factor-test", "n_clicks"),
-#     State("user-universe", "value"),
-#     State("user-periods", "value"),
-#     State("user-factor", "value"),
-#     prevent_initial_call=True,
-# )
-# def compute_factor_data(
-#     n_clicks: int,
-#     universe: str,
-#     periods: int,
-#     factor: str,
-# ):
-#     uni = api.get_universe(code=universe)
-#     uni.f.append(factor, periods=periods)
-#     fig = uni.f.plot()
-#     return (
-#         fig,
-#         f"Factor Performances",
-#     )
-
-
-def blank_fig():
-    fig = go.Figure(go.Scatter(x=[], y=[]))
-    fig.update_layout(template=None)
-    fig.update_xaxes(showgrid=False, showticklabels=False, zeroline=False)
-    fig.update_yaxes(showgrid=False, showticklabels=False, zeroline=False)
-    return fig
 
 
 # @callback(
@@ -240,14 +219,23 @@ def blank_fig():
 
 
 @callback(
-    Output("factor-performance-chart", "figure"),
+    Output("factor-chart", "children"),
     Input("user-factor-test", "nClicks"),
     State("user-universe", "value"),
     State("user-factor", "value"),
     prevent_initial_call=True,
 )
 def handle_chart(nClicks, universe, factor):
-    factor_ins = getattr(factors, factor)
-    if issubclass(factor_ins, factors.Factor):
-        return factor_ins.create(universe).plot()
+    if nClicks:
+        factor_ins = getattr(factors, factor)
+        if issubclass(factor_ins, factors.Factor):
+            return [
+                fac.AntdCenter(html.H3(f"{factor} Performance")),
+                fac.AntdCenter(
+                    dcc.Graph(
+                        figure=factor_ins.create(universe).plot(),
+                        config={"displayModeBar": False},
+                    ),
+                ),
+            ]
     return no_update
