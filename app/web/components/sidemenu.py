@@ -31,7 +31,7 @@ def Header():
             id="side-menu-header",
             style={
                 "fontWeight": "bold",
-                "fontSize": "36px",
+                "fontSize": "24px",
             },
         ),
         style={
@@ -103,7 +103,7 @@ def SideMenu():
 def handle_side_menu_collapse(nClicks, style):
     if nClicks:
         if style.get("width") == "250px":
-            style.update({"width": "35px"})
+            style.update({"width": "0"})
             return (style, "antd-arrow-right", None)
         style.update({"width": "250px"})
         return (style, "antd-arrow-left", "ROBERTDASHBOARD")
@@ -114,7 +114,6 @@ def handle_side_menu_collapse(nClicks, style):
     Input("url", "pathname"),
 )
 def handle_router_menu_key(pathname):
-    print(pathname)
     if pathname == "/":
         pathname = "/Dashboard"
     return pathname

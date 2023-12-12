@@ -77,7 +77,6 @@ def handle_chart(nClicks, universe, signal):
                 dcc.Graph(
                     figure=signal_ins.create(universe).plot(),
                     config={"displayModeBar": False},
-                    # style={"max-width": "1000px", "height": "400px", "width": "900px"},
                 )
             )
         )

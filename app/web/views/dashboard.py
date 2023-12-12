@@ -1,14 +1,18 @@
-from dash import html, dcc, callback, Output, Input, State
-from app import db
+"""
+
+
+
+"""
+
+
+from dash import html, dcc, callback, Output, Input
 import plotly.express as px
-from app.db.models import TbMarketReport
-import dash_bootstrap_components as dbc
+from app import db
 from .. import components
-import feffery_antd_components as fac
 from .base import Page
 
 
-class Dashboard:
+class Dashboard(Page):
     menu = {
         "component": "Item",
         "props": {
@@ -21,25 +25,25 @@ class Dashboard:
     }
 
     def layout(self):
-        rep = TbMarketReport.latest()[-1]["content"]
+        # rep = TbMarketReport.latest()[-1]["content"]
         return html.Div(
             children=[
                 html.H1("Market Briefing", style={"text-align": "center"}),
                 html.Hr(),
-                dbc.Placeholder(
-                    children=dbc.Card(
-                        dbc.CardBody(
-                            children=dcc.Markdown(
-                                children=rep,
-                                style={
-                                    "font-size": "18px",
-                                    "font-family": "Calibri",
-                                },
-                            )
-                        )
-                    )
-                ),
-                html.P(""),  # Add an empty paragraph for line break
+                # dbc.Placeholder(
+                #     children=dbc.Card(
+                #         dbc.CardBody(
+                #             children=dcc.Markdown(
+                #                 children=rep,
+                #                 style={
+                #                     "font-size": "18px",
+                #                     "font-family": "Calibri",
+                #                 },
+                #             )
+                #         )
+                #     )
+                # ),
+                html.P("UnderDevelopment..."),  # Add an empty paragraph for line break
             ]
         )
 
